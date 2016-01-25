@@ -46,6 +46,7 @@ ELSE()
 		libjsoncpp.a
 		libvztcpsdk.a
 		-lpthread
+		rt
 		)
 ENDIF()
 
@@ -60,6 +61,7 @@ ELSEIF(APPLE)
 	 ADD_DEFINITIONS(
 		-DPOSIX
 		-DOSX
+		-framework Foundation
 	 )
 ELSE()
 	 ADD_DEFINITIONS(
