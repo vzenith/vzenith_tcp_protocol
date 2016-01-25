@@ -8,19 +8,7 @@ before_install:
   - git submodule update --init --recursive
 
 install: 
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - cmake . -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
-
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - libyajl-dev
-    - libxml2-dev
-    - gcc-4.8
-    - g++-4.8
-    - clang
 
 script:
  - $CXX --version 
