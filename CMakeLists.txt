@@ -45,7 +45,8 @@ ELSE()
 	SET(TCP_SDK_LINK_LIB
 		libjsoncpp.a
 		libvztcpsdk.a
-		pthread
+		-lpthread
+		-lrt
 		)
 ENDIF()
 
