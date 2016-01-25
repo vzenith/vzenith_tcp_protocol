@@ -29,8 +29,7 @@ endforeach()
 
 #########################################################################
 #Step 3 : Add code source
-
- if(WIN32)
+IF(WIN32)
 	SET(PLATFORM_STR_LIST
 		${CMAKE_CURRENT_SOURCE_DIR}/base/win32.h
 		${CMAKE_CURRENT_SOURCE_DIR}/base/win32.cpp
@@ -39,11 +38,17 @@ endforeach()
 		${CMAKE_CURRENT_SOURCE_DIR}/base/winping.h
 		${CMAKE_CURRENT_SOURCE_DIR}/base/winping.cpp
 		)
- else()
+ELSEIF(APPLE)
+	SET(PLATFORM_STR_LIST
+		${CMAKE_CURRENT_SOURCE_DIR}/base/maccocoathreadhelper.h
+		${CMAKE_CURRENT_SOURCE_DIR}/base/maccocoathreadhelper.mm
+		${CMAKE_CURRENT_SOURCE_DIR}/base/scoped_autorelease_pool.h
+		${CMAKE_CURRENT_SOURCE_DIR}/base/scoped_autorelease_pool.mm
+		)
+ELSE()
 	SET(PLATFORM_STR_LIST
 		)
- endif()
-
+ENDIF()
 SET(SRC_LIST 
 	${CMAKE_CURRENT_SOURCE_DIR}/base/asyncfile.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base/asyncfile.cpp
