@@ -44,8 +44,8 @@
 #include "base/timeutils.h"
 
 #if !__has_feature(objc_arc) && (defined(OSX) || defined(IOS))
-#include "vzsdk/base/maccocoathreadhelper.h"
-#include "vzsdk/base/scoped_autorelease_pool.h"
+#include "base/maccocoathreadhelper.h"
+#include "base/scoped_autorelease_pool.h"
 #endif
 
 namespace vzsdk {
