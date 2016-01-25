@@ -40,7 +40,7 @@ VzsdkServices::~VzsdkServices() {
 bool VzsdkServices::Start() {
   // Init logging system
   LogMessage::LogTimestamps(true);
-  LogMessage::LogContext(vzsdk::LoggingSeverity::LS_INFO);
+  LogMessage::LogContext(vzsdk::LS_INFO);
   LogMessage::LogThreads(true);
   queue_layer_.reset(new QueueLayer());
   return queue_layer_->Start();

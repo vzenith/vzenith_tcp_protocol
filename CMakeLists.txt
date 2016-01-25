@@ -52,17 +52,20 @@ ENDIF()
 
 ##3 add defines
 MESSAGE(STATUS "Step 3 :  Add More defines")
- if(WIN32)
+IF(WIN32)
 	 ADD_DEFINITIONS(
 		 -D_CRT_SECURE_NO_WARNINGS
 		 -D_SCL_SECURE_NO_WARNINGS
 	 )
- else()
+ELSEIF(APPLE)
+	 ADD_DEFINITIONS(
+		-DOSX
+	 )
+ELSE()
 	 ADD_DEFINITIONS(
 		-DPOSIX
 	 )
- endif()
-
+ENDIF()
 INCLUDE_DIRECTORIES(${TCP_SDK_INCLUDE_DIR})
 LINK_DIRECTORIES(${TCP_SDK_LIBRARY_DIR})
 #####################################################################

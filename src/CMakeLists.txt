@@ -193,15 +193,6 @@ SOURCE_GROUP(vzsdk FILES
 #Step 4 : Add PROJECT define 
 MESSAGE(STATUS "Step 4 : Add code source")
 
- if(WIN32)
-	 ADD_DEFINITIONS(
-		 -D_CRT_SECURE_NO_WARNINGS
-	 )
- else()
-	 ADD_DEFINITIONS(
-		 -std=c++11
-	 )
- endif()
 #########################################################################
 #Step 5 : Add executable or library target
 MESSAGE(STATUS "Step 5 : Add executable or library target")
