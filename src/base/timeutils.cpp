@@ -28,6 +28,7 @@
 #ifdef POSIX
 #include <sys/time.h>
 #if defined(OSX) || defined(IOS)
+#include <mach/clock.h>
 #include <mach/mach_time.h>
 #endif
 #endif
