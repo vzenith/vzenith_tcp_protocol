@@ -46,7 +46,6 @@ ELSE()
 		libjsoncpp.a
 		libvztcpsdk.a
 		-lpthread
-		-lrt
 		)
 ENDIF()
 
