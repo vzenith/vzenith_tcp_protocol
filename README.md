@@ -8,7 +8,7 @@
 - [travis-ci.org](https://travis-ci.org/vzenith/vzenith_tcp_protocol "travis-ci.org") 已经编译通过，同时也在Windows平台上面编译通过。
 - [coveralls.io](https://coveralls.io/github/vzenith/vzenith_tcp_protocol?branch=master")，单元测试覆盖率达到86%
 - 在Ubuntu 64平台下，使用valgrind对所有的单元测试程序进行内存检查通过。您可以使用 `git_path/vzenith_tcp_protocol/valgrind_test/valgrind_test.sh`这个脚本文件对所有的单元测试进行验证。
-- [linthub.io](https://linthub.io/khvysofq/aos/e0fa99cc9f98004345bb81a5f8ff950955ea711c) 代码风格检查完成。linthub对于C++的代码风格检查使用的是`cpplint`，但是却不支持一些过滤器，比如禁止对C++11代码风格的警告，因此有一些代码风格被注释了，并没有完全遵守linthub.io的检查结果。不过可以在本地进行下载 [cpplint.py](https://pypi.python.org/pypi/cpplint") 进行代码风格检查，同时使用如下的过滤参数 `--filter=-build/include_what_you_use,-runtime/references,-readability/casting,-build/c++11,-runtime/printf,-runtime/threadsafe_fn`对`git_path/vzenith_tcp_protocol/src`目录下的代码进行风格检查。
+- [linthub.io](https://linthub.io/events) 代码风格检查完成。linthub对于C++的代码风格检查使用的是`cpplint`，但是却不支持一些过滤器，比如禁止对C++11代码风格的警告，因此有一些代码风格被注释了，并没有完全遵守linthub.io的检查结果。不过可以在本地进行下载 [cpplint.py](https://pypi.python.org/pypi/cpplint") 进行代码风格检查，同时使用如下的过滤参数 `--filter=-build/include_what_you_use,-runtime/references,-readability/casting,-build/c++11,-runtime/printf,-runtime/threadsafe_fn`对`git_path/vzenith_tcp_protocol/src`目录下的代码进行风格检查。
 
 ## 编译配置
 
