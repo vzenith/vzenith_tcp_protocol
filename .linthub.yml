@@ -4,7 +4,8 @@ analyzers:
    include: ["*.cpp", "*.h", "*.hpp", "*.c"]
    path: 
    - ./src/base
-   - ./src/ali_search
+   - ./src/event
+   - ./src/vzsdk
    filters:
    - -whitespace
    - +whitespace/braces

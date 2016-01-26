@@ -195,7 +195,6 @@ SOURCE_GROUP(vzsdk FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
 	)
 
-
 SET(CONVERALLS_SRC 
 	${CMAKE_CURRENT_SOURCE_DIR}/base/base64.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base/base64.cpp
