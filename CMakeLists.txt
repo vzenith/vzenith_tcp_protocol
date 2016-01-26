@@ -46,6 +46,7 @@ ELSE()
 		libjsoncpp.a
 		libvztcpsdk.a
 		-lpthread
+		-lrt
 		)
 ENDIF()
 
@@ -65,7 +66,6 @@ ELSEIF(APPLE)
 ELSE()
 	 ADD_DEFINITIONS(
 		-DPOSIX
-		-lrt
 	 )
 ENDIF()
 INCLUDE_DIRECTORIES(${TCP_SDK_INCLUDE_DIR})
