@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 #########################################################################
 
 # Basic environment setting
-SET(BUILD_PROJECT_NAME "uint_test")
+SET(BUILD_PROJECT_NAME "unit_test")
 
 #########################################################################
 #INCLUDE_DIRECTORIES(${LIBVZNET_INCLUDE_DIR})
@@ -22,50 +22,54 @@ foreach(link_dir ${link_dirs})
   message(STATUS "    link directory='${link_dir}'")
 endforeach()
 
- if(WIN32)
-	 ADD_DEFINITIONS(
-	 )
- else()
-	 ADD_DEFINITIONS(
-	 )
- endif()
+IF(WIN32)
+	SET(PLATFORM_STR_LIST
+		${CMAKE_CURRENT_SOURCE_DIR}/win32_unittest.cpp
+		)
+ELSEIF(APPLE)
+	SET(PLATFORM_STR_LIST
+		)
+ELSE()
+	SET(PLATFORM_STR_LIST
+		)
+ENDIF()
 #########################################################################
 #Step 3 : Add code source
 SET(SRC_LIST 
 	${CMAKE_CURRENT_SOURCE_DIR}/unittest_main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/gunit.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base64_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/basictypes_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/bytebuffer_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/byteorder_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/sigslot_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/stream_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/stringencode_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/stringutils_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/timeutils_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/win32_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/basictypes_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/buffer_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/bytebuffer_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/byteorder_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/sigslot_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/stream_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/stringencode_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/stringutils_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/timeutils_unittest.cpp
+	#${PLATFORM_STR_LIST}
 	)
 SOURCE_GROUP(${BUILD_PROJECT_NAME} FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/unittest_main.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/gunit.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base64_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/basictypes_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/buffer_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/bytebuffer_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/byteorder_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/sigslot_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/stream_unittest.cpp
-	
-	${CMAKE_CURRENT_SOURCE_DIR}/stringencode_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/stringutils_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/timeutils_unittest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/win32_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/basictypes_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/buffer_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/bytebuffer_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/byteorder_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/sigslot_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/stream_unittest.cpp
+	#
+	#${CMAKE_CURRENT_SOURCE_DIR}/stringencode_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/stringutils_unittest.cpp
+	#${CMAKE_CURRENT_SOURCE_DIR}/timeutils_unittest.cpp
+	#${PLATFORM_STR_LIST}
 )
 #########################################################################
 #Step 4 : Add PROJECT define 
@@ -88,7 +92,9 @@ IF(WIN32)
 	)
 ELSE()
 	TARGET_LINK_LIBRARIES(${BUILD_PROJECT_NAME} 
-		${TCP_SDK_LINK_LIB}
 		gtest.a
+		${TCP_SDK_LINK_LIB}
 	)
 ENDIF()
+
+add_test(${BUILD_PROJECT_NAME} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${BUILD_PROJECT_NAME})

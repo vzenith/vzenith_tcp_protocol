@@ -11,12 +11,20 @@ SET(PROJECT_SET_NAME_LIB "lib")
 SET(PROJECT_SET_NAME_THIRD_PART "third_part")
 #SET(PROJECT_MAIN_SRC_LIST "")
 option(ENABLE_UNIT_TEST "Set to ON to USE GTest unit testing." ON)
+option(COVERALLS "Generate coveralls data" OFF)
 ##########################################################
 ## Step 1 
 SET(JSON_CPP ${PROJECT_SOURCE_DIR}/third_part/jsoncpp)
 SET(LIBEVENT ${PROJECT_SOURCE_DIR}/third_part/libevent)
 SET(GTEST ${PROJECT_SOURCE_DIR}/third_part/gtest)
-# SET(OSS_C_SDK ${PROJECT_SOURCE_DIR}/third_part/oss_c_sdk_windows/oss_c_sdk_lib)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
+	${PROJECT_SOURCE_DIR}/coveralls-cmake/cmake)
+
+if (COVERALLS)
+	include(Coveralls)
+	coveralls_turn_on_coverage()
+endif()
 
 ##1. INCLUDE_DIRECTORES
 MESSAGE(STATUS "Step 1 :  Add include directores")
@@ -135,5 +143,6 @@ ADD_SUBDIRECTORY(test/sdk_test)
 ADD_SUBDIRECTORY(test/connected_test)
 
 IF(ENABLE_UNIT_TEST)
+	enable_testing()
 	ADD_SUBDIRECTORY(test/unit_test)
 ENDIF()

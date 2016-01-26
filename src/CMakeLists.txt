@@ -194,6 +194,20 @@ SOURCE_GROUP(vzsdk FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
 	)
+
+
+SET(CONVERALLS_SRC 
+	${CMAKE_CURRENT_SOURCE_DIR}/base/base64.h
+	${CMAKE_CURRENT_SOURCE_DIR}/base/base64.cpp
+	${PLATFORM_STR_LIST}
+	)
+
+if (COVERALLS)
+	coveralls_setup(
+        "${CONVERALLS_SRC}"
+        ${COVERALLS_UPLOAD}                 
+        "${PROJECT_SOURCE_DIR}/coveralls-cmake/cmake")
+endif()
 #########################################################################
 #Step 4 : Add PROJECT define 
 MESSAGE(STATUS "Step 4 : Add code source")
