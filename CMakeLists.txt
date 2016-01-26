@@ -10,10 +10,12 @@ SET(PROJECT_SET_NAME_TEST "test")
 SET(PROJECT_SET_NAME_LIB "lib")
 SET(PROJECT_SET_NAME_THIRD_PART "third_part")
 #SET(PROJECT_MAIN_SRC_LIST "")
+option(ENABLE_UNIT_TEST "Set to ON to USE GTest unit testing." ON)
 ##########################################################
 ## Step 1 
 SET(JSON_CPP ${PROJECT_SOURCE_DIR}/third_part/jsoncpp)
 SET(LIBEVENT ${PROJECT_SOURCE_DIR}/third_part/libevent)
+SET(GTEST ${PROJECT_SOURCE_DIR}/third_part/gtest)
 # SET(OSS_C_SDK ${PROJECT_SOURCE_DIR}/third_part/oss_c_sdk_windows/oss_c_sdk_lib)
 
 ##1. INCLUDE_DIRECTORES
@@ -23,6 +25,7 @@ SET(TCP_SDK_INCLUDE_DIR
 	${PROJECT_SOURCE_DIR}/src
 	${LIBEVENT}/include
 	${PROJECT_BINARY_DIR}/third_part/libevent/include
+	${GTEST}/googletest/include
 )
 
 ##2 LIBRARY PATH
@@ -73,19 +76,19 @@ LINK_DIRECTORIES(${TCP_SDK_LIBRARY_DIR})
 #####################################################################
 # Step 3 :Set visual studio runtime type
 if(WIN32)
-	#set(CompilerFlags
-	#		CMAKE_CXX_FLAGS
-	#		CMAKE_CXX_FLAGS_DEBUG
-	#		CMAKE_CXX_FLAGS_RELEASE
-	#		CMAKE_C_FLAGS
-	#		CMAKE_C_FLAGS_DEBUG
-	#		CMAKE_C_FLAGS_RELEASE
-	#		)
-	#foreach(CompilerFlag ${CompilerFlags})
-	#  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-	#  string(REPLACE "/MDd" "/MTd" ${CompilerFlag} "${${CompilerFlag}}")
-	#  #string(REPLACE "/EDITANDCONTINUE" "/SAFESEH" ${CompilerFlag} "${${CompilerFlag}}")
-	#endforeach()
+	set(CompilerFlags
+			CMAKE_CXX_FLAGS
+			CMAKE_CXX_FLAGS_DEBUG
+			CMAKE_CXX_FLAGS_RELEASE
+			CMAKE_C_FLAGS
+			CMAKE_C_FLAGS_DEBUG
+			CMAKE_C_FLAGS_RELEASE
+			)
+	foreach(CompilerFlag ${CompilerFlags})
+	  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+	  string(REPLACE "/MDd" "/MTd" ${CompilerFlag} "${${CompilerFlag}}")
+	  #string(REPLACE "/EDITANDCONTINUE" "/SAFESEH" ${CompilerFlag} "${${CompilerFlag}}")
+	endforeach()
 	
 ################################################################
 	
@@ -118,6 +121,9 @@ ENDIF()
 ##########################################################
 ## Setp 3
 ADD_SUBDIRECTORY(third_part/jsoncpp)
+IF(ENABLE_UNIT_TEST)
+	ADD_SUBDIRECTORY(third_part/gtest)
+ENDIF()
 
 ADD_SUBDIRECTORY(src)
 
@@ -127,3 +133,7 @@ ADD_SUBDIRECTORY(test/thead_test)
 ADD_SUBDIRECTORY(test/session_test)
 ADD_SUBDIRECTORY(test/sdk_test)
 ADD_SUBDIRECTORY(test/connected_test)
+
+IF(ENABLE_UNIT_TEST)
+	ADD_SUBDIRECTORY(test/unit_test)
+ENDIF()

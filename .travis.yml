@@ -28,4 +28,3 @@ script:
 
 os:
   - linux
-  - osx

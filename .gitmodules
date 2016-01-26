@@ -1,3 +1,6 @@
 [submodule "third_part/jsoncpp"]
 	path = third_part/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp.git
+[submodule "third_part/gtest"]
+	path = third_part/gtest
+	url = https://github.com/google/googletest.git
