@@ -4,3 +4,6 @@
 [submodule "third_part/gtest"]
 	path = third_part/gtest
 	url = https://github.com/google/googletest.git
+[submodule "coveralls-cmake"]
+	path = coveralls-cmake
+	url = https://github.com/JoakimSoderberg/coveralls-cmake.git

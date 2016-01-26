@@ -1,0 +1,17 @@
+platform: linux | osx
+analyzers:
+ - cpplint: true
+   include: ["*.cpp", "*.h", "*.hpp", "*.c"]
+   path: 
+   - ./src/base
+   - ./src/ali_search
+   filters:
+   - -whitespace
+   - +whitespace/braces
+   - -build/include_what_you_use
+   - -runtime/references
+   - -readability/casting
+   - -build/c++11
+   - -runtime/printf
+   - -runtime/threadsafe_fn
+   style: google

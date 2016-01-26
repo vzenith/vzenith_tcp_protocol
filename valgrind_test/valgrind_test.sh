@@ -1,0 +1,1 @@
+valgrind --quiet --leak-check=full --show-reachable=yes --trace-children=yes ../../bin/unix/unit_test > valgrind.log
