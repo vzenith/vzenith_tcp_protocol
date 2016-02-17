@@ -37,12 +37,14 @@ namespace vzsdk {
 
 class QueueLayer;
 
-class Task : public MessageHandler  {
+class Task : public MessageHandler,
+  public boost::enable_shared_from_this<Task> {
  public:
+  typedef boost::shared_ptr<Task> Ptr;
   Task(QueueLayer *queue_layer, uint32 timeout);
   virtual ~Task();
   virtual void OnMessage(Message *msg);
-  virtual MessageData *message_data() = 0;
+  virtual MessageData::Ptr message_data() = 0;
   virtual uint32 message_type() = 0;
   Message::Ptr SyncProcessTask();
   Thread *task_thread() {
@@ -51,7 +53,7 @@ class Task : public MessageHandler  {
   uint32 task_id() const {
     return task_id_;
   }
-  void HandleMessage(MessageData *pdata);
+  void HandleMessage(MessageData::Ptr pdata);
  private:
   void PostTask();
   Message::Ptr WaitTaskDone();
@@ -69,14 +71,14 @@ class ConnectTask : public Task {
               uint32 timeout,
               SocketAddress &address);
   virtual ~ConnectTask();
-  virtual MessageData *message_data() {
-    return message_data_.get();
+  virtual MessageData::Ptr message_data() {
+    return message_data_;
   }
   virtual uint32 message_type() {
     return REQ_CONNECT_SERVER;
   }
  private:
-  scoped_ptr<ReqConnectData> message_data_;
+  MessageData::Ptr message_data_;
 };
 
 }

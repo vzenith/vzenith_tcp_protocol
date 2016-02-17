@@ -37,17 +37,19 @@ namespace vzsdk {
 // TODO: Remove Socket and rename AsyncSocket to Socket.
 
 // Provides the ability to perform socket I/O asynchronously.
-class AsyncSocket : public Socket {
+class AsyncSocket : public Socket,
+  public boost::enable_shared_from_this<AsyncSocket> {
  public:
+  typedef boost::shared_ptr<AsyncSocket> Ptr;
   AsyncSocket();
   virtual ~AsyncSocket();
 
   virtual AsyncSocket* Accept(SocketAddress* paddr) = 0;
 
-  sigslot::signal1<AsyncSocket*> SignalReadEvent;        // ready to read
-  sigslot::signal1<AsyncSocket*> SignalWriteEvent;       // ready to write
-  sigslot::signal1<AsyncSocket*> SignalConnectEvent;     // connected
-  sigslot::signal2<AsyncSocket*, int> SignalCloseEvent;  // closed
+  sigslot::signal1<AsyncSocket::Ptr> SignalReadEvent;        // ready to read
+  sigslot::signal1<AsyncSocket::Ptr> SignalWriteEvent;       // ready to write
+  sigslot::signal1<AsyncSocket::Ptr> SignalConnectEvent;     // connected
+  sigslot::signal2<AsyncSocket::Ptr, int> SignalCloseEvent;  // closed
 };
 
 class AsyncSocketAdapter : public AsyncSocket, public sigslot::has_slots<> {
@@ -112,17 +114,17 @@ class AsyncSocketAdapter : public AsyncSocket, public sigslot::has_slots<> {
   }
 
  protected:
-  virtual void OnConnectEvent(AsyncSocket* socket) {
-    SignalConnectEvent(this);
+  virtual void OnConnectEvent(AsyncSocket::Ptr socket) {
+    SignalConnectEvent(shared_from_this());
   }
-  virtual void OnReadEvent(AsyncSocket* socket) {
-    SignalReadEvent(this);
+  virtual void OnReadEvent(AsyncSocket::Ptr socket) {
+    SignalReadEvent(shared_from_this());
   }
-  virtual void OnWriteEvent(AsyncSocket* socket) {
-    SignalWriteEvent(this);
+  virtual void OnWriteEvent(AsyncSocket::Ptr socket) {
+    SignalWriteEvent(shared_from_this());
   }
-  virtual void OnCloseEvent(AsyncSocket* socket, int err) {
-    SignalCloseEvent(this, err);
+  virtual void OnCloseEvent(AsyncSocket::Ptr socket, int err) {
+    SignalCloseEvent(shared_from_this(), err);
   }
 
   AsyncSocket* socket_;

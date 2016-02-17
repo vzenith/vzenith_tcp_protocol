@@ -122,8 +122,8 @@ void MessageQueueManager::ClearInternal(MessageHandler *handler) {
 // MessageQueue
 
 MessageQueue::MessageQueue(SocketServer* ss)
-    : ss_(ss), fStop_(false), fPeekKeep_(false), active_(false),
-      dmsgq_next_num_(0) {
+  : ss_(ss), fStop_(false), fPeekKeep_(false), active_(false),
+    dmsgq_next_num_(0) {
   if (!ss_) {
     // Currently, MessageQueue holds a socket server, and is the base class for
     // Thread.  It seems like it makes more sense for Thread to hold the socket
@@ -242,7 +242,7 @@ bool MessageQueue::Get(Message *pmsg, int cmsWait, bool process_io) {
       // If this was a dispose message, delete it and skip it.
       if (MQID_DISPOSE == pmsg->message_id) {
         ASSERT(NULL == pmsg->phandler);
-        delete pmsg->pdata;
+        //delete pmsg->pdata;
         *pmsg = Message();
         continue;
       }
@@ -282,8 +282,10 @@ bool MessageQueue::Get(Message *pmsg, int cmsWait, bool process_io) {
 void MessageQueue::ReceiveSends() {
 }
 
-void MessageQueue::Post(MessageHandler *phandler, uint32 id,
-    MessageData *pdata, bool time_sensitive) {
+void MessageQueue::Post(MessageHandler *phandler,
+                        uint32 id,
+                        MessageData::Ptr pdata,
+                        bool time_sensitive) {
   if (fStop_)
     return;
 
@@ -304,8 +306,11 @@ void MessageQueue::Post(MessageHandler *phandler, uint32 id,
   ss_->WakeUp();
 }
 
-void MessageQueue::DoDelayPost(int cmsDelay, uint32 tstamp,
-    MessageHandler *phandler, uint32 id, MessageData* pdata) {
+void MessageQueue::DoDelayPost(int cmsDelay,
+                               uint32 tstamp,
+                               MessageHandler *phandler,
+                               uint32 id,
+                               MessageData::Ptr pdata) {
   if (fStop_)
     return;
 
@@ -354,7 +359,7 @@ void MessageQueue::Clear(MessageHandler *phandler, uint32 id,
     if (removed) {
       removed->push_back(msgPeek_);
     } else {
-      delete msgPeek_.pdata;
+      //delete msgPeek_.pdata;
     }
     fPeekKeep_ = false;
   }
@@ -366,7 +371,7 @@ void MessageQueue::Clear(MessageHandler *phandler, uint32 id,
       if (removed) {
         removed->push_back(*it);
       } else {
-        delete it->pdata;
+        // delete it->pdata;
       }
       it = msgq_.erase(it);
     } else {
@@ -383,7 +388,7 @@ void MessageQueue::Clear(MessageHandler *phandler, uint32 id,
       if (removed) {
         removed->push_back(it->msg_);
       } else {
-        delete it->msg_.pdata;
+        //delete it->msg_.pdata;
       }
     } else {
       *new_end++ = *it;

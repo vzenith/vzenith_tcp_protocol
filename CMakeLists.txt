@@ -31,6 +31,7 @@ MESSAGE(STATUS "Step 1 :  Add include directores")
 SET(TCP_SDK_INCLUDE_DIR
 	${JSON_CPP}/include
 	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/third_part
 	${LIBEVENT}/include
 	${PROJECT_BINARY_DIR}/third_part/libevent/include
 	${GTEST}/googletest/include
@@ -136,11 +137,12 @@ ENDIF()
 ADD_SUBDIRECTORY(src)
 
 # TEST
-#  ADD_SUBDIRECTORY(test/libevent_test)
+# ADD_SUBDIRECTORY(test/libevent_test)
 ADD_SUBDIRECTORY(test/thead_test)
 ADD_SUBDIRECTORY(test/session_test)
 ADD_SUBDIRECTORY(test/sdk_test)
 ADD_SUBDIRECTORY(test/connected_test)
+ADD_SUBDIRECTORY(test/boost_test)
 
 IF(ENABLE_UNIT_TEST)
 	enable_testing()

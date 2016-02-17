@@ -32,10 +32,9 @@
 #include "event/thread.h"
 #include "base/scoped_ptr.h"
 #include "vzsdk/sessionmanager.h"
+#include "vzsdk/task.h"
 
 namespace vzsdk {
-class Task;
-class Stanza;
 class QueueLayer : public noncopyable,
   public sigslot::has_slots<>,
   public MessageHandler  {
@@ -48,21 +47,21 @@ class QueueLayer : public noncopyable,
   Thread *queue_thread() {
     return queue_thread_.get();
   }
-  void Post(uint32 id, MessageData *pdata = NULL);
-  void Post(Task *task);
+  void Post(uint32 id, MessageData::Ptr pdata);
+  void Post(Task::Ptr task);
  private:
   void OnReqMessage(Message *msg);
   void OnResMessage(Message *msg);
 
-  void OnConnectedEvent(uint32 task_id, Stanza *stanza);
+  void OnConnectedEvent(uint32 task_id, Message *msg);
 
-  bool AddTask(Task* task);
+  bool AddTask(Task::Ptr task);
   bool RemoveTask(uint32 task_id);
-  Task *FindTask(uint32 task_id);
+  Task::Ptr FindTask(uint32 task_id);
  private:
   scoped_ptr<Thread> queue_thread_;
   scoped_ptr<SessionManager> session_manager_;
-  std::map<uint32, Task*> tasks_;
+  std::map<uint32, Task::Ptr> tasks_;
 };
 }
 

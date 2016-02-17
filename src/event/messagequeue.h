@@ -45,6 +45,7 @@
 #include "base/socketserver.h"
 #include "base/timeutils.h"
 #include "base/shared_ptr.h"
+#include "boost/boost_settings.hpp"
 
 namespace vzsdk {
 
@@ -84,8 +85,9 @@ class MessageQueueManager {
 // Derive from this for specialized data
 // App manages lifetime, except when messages are purged
 
-class MessageData {
+class MessageData : public boost::enable_shared_from_this<MessageData> {
  public:
+  typedef boost::shared_ptr<MessageData> Ptr;
   MessageData() {}
   virtual ~MessageData() {}
 };
@@ -94,8 +96,12 @@ template <class T>
 class TypedMessageData : public MessageData {
  public:
   explicit TypedMessageData(const T& data) : data_(data) { }
-  const T& data() const { return data_; }
-  T& data() { return data_; }
+  const T& data() const {
+    return data_;
+  }
+  T& data() {
+    return data_;
+  }
  private:
   T data_;
 };
@@ -105,8 +111,12 @@ template <class T>
 class ScopedMessageData : public MessageData {
  public:
   explicit ScopedMessageData(T* data) : data_(data) { }
-  const scoped_ptr<T>& data() const { return data_; }
-  scoped_ptr<T>& data() { return data_; }
+  const scoped_ptr<T>& data() const {
+    return data_;
+  }
+  scoped_ptr<T>& data() {
+    return data_;
+  }
  private:
   scoped_ptr<T> data_;
 };
@@ -116,8 +126,12 @@ template <class T>
 class ScopedRefMessageData : public MessageData {
  public:
   explicit ScopedRefMessageData(T* data) : data_(data) { }
-  const scoped_refptr<T>& data() const { return data_; }
-  scoped_refptr<T>& data() { return data_; }
+  const scoped_refptr<T>& data() const {
+    return data_;
+  }
+  scoped_refptr<T>& data() {
+    return data_;
+  }
  private:
   scoped_refptr<T> data_;
 };
@@ -136,7 +150,9 @@ template<class T>
 class DisposeData : public MessageData {
  public:
   explicit DisposeData(T* data) : data_(data) { }
-  virtual ~DisposeData() { delete data_; }
+  virtual ~DisposeData() {
+    delete data_;
+  }
  private:
   T* data_;
 };
@@ -157,7 +173,7 @@ struct Message {
   }
   MessageHandler *phandler;
   uint32 message_id;
-  MessageData *pdata;
+  MessageData::Ptr pdata;
   uint32 ts_sensitive;
 };
 
@@ -169,7 +185,7 @@ typedef std::list<Message> MessageList;
 class DelayedMessage {
  public:
   DelayedMessage(int delay, uint32 trigger, uint32 num, const Message& msg)
-  : cmsDelay_(delay), msTrigger_(trigger), num_(num), msg_(msg) { }
+    : cmsDelay_(delay), msTrigger_(trigger), num_(num), msg_(msg) { }
 
   bool operator< (const DelayedMessage& dmsg) const {
     return (dmsg.msTrigger_ < msTrigger_)
@@ -187,7 +203,9 @@ class MessageQueue {
   explicit MessageQueue(SocketServer* ss = NULL);
   virtual ~MessageQueue();
 
-  SocketServer* socketserver() { return ss_; }
+  SocketServer* socketserver() {
+    return ss_;
+  }
   void set_socketserver(SocketServer* ss);
 
   // Note: The behavior of MessageQueue has changed.  When a MQ is stopped,
@@ -208,13 +226,13 @@ class MessageQueue {
                    bool process_io = true);
   virtual bool Peek(Message *pmsg, int cmsWait = 0);
   virtual void Post(MessageHandler *phandler, uint32 id = 0,
-                    MessageData *pdata = NULL, bool time_sensitive = false);
+                    MessageData::Ptr pdata = NULL, bool time_sensitive = false);
   virtual void PostDelayed(int cmsDelay, MessageHandler *phandler,
-                           uint32 id = 0, MessageData *pdata = NULL) {
+                           uint32 id = 0, MessageData::Ptr pdata = NULL) {
     return DoDelayPost(cmsDelay, TimeAfter(cmsDelay), phandler, id, pdata);
   }
   virtual void PostAt(uint32 tstamp, MessageHandler *phandler,
-                      uint32 id = 0, MessageData *pdata = NULL) {
+                      uint32 id = 0, MessageData::Ptr pdata = NULL) {
     return DoDelayPost(TimeUntil(tstamp), tstamp, phandler, id, pdata);
   }
   virtual void Clear(MessageHandler *phandler, uint32 id = MQID_ANY,
@@ -225,7 +243,9 @@ class MessageQueue {
   // Amount of time until the next message can be retrieved
   virtual int GetDelay();
 
-  bool empty() const { return size() == 0u; }
+  bool empty() const {
+    return size() == 0u;
+  }
   size_t size() const {
     CritScope cs(&crit_);  // msgq_.size() is not thread safe.
     return msgq_.size() + dmsgq_.size() + (fPeekKeep_ ? 1u : 0u);
@@ -245,13 +265,17 @@ class MessageQueue {
  protected:
   class PriorityQueue : public std::priority_queue<DelayedMessage> {
    public:
-    container_type& container() { return c; }
-    void reheap() { make_heap(c.begin(), c.end(), comp); }
+    container_type& container() {
+      return c;
+    }
+    void reheap() {
+      make_heap(c.begin(), c.end(), comp);
+    }
   };
 
   void EnsureActive();
   void DoDelayPost(int cmsDelay, uint32 tstamp, MessageHandler *phandler,
-                   uint32 id, MessageData* pdata);
+                   uint32 id, MessageData::Ptr pdata);
 
   // The SocketServer is not owned by MessageQueue.
   SocketServer* ss_;

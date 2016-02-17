@@ -32,7 +32,7 @@
 int main(void) {
   vzsdk::VzsdkServices vzsdk_services;
   vzsdk_services.Start();
-  int session_id = vzsdk_services.ConnectServer("192.168.4.172", 8131);
+  int session_id = vzsdk_services.ConnectServer("192.168.4.167", 8131);
   LOG(LS_INFO) << "session_id = " << session_id;
 #ifdef WIN32
   Sleep(1000000);

@@ -30,6 +30,7 @@
 
 namespace vzsdk {
 
+// The task id start by 0X01
 uint32 Task::unequal_task_id_ = 0X01;
 
 Task::Task(QueueLayer *queue_layer, uint32 timeout)
@@ -51,13 +52,13 @@ Message::Ptr Task::SyncProcessTask() {
   return WaitTaskDone();
 }
 
-void Task::HandleMessage(MessageData *pdata) {
+void Task::HandleMessage(MessageData::Ptr pdata) {
   task_thread_->Post(this, task_id_, pdata);
 }
 
 void Task::PostTask() {
   ASSERT(queue_layer_ != NULL);
-  queue_layer_->Post(this);
+  queue_layer_->Post(shared_from_this());
 }
 
 Message::Ptr Task::WaitTaskDone() {

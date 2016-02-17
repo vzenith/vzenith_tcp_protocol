@@ -46,7 +46,7 @@ class SessionManager : public noncopyable,
   SessionManager(QueueLayer *queue_layer);
   virtual ~SessionManager();
   virtual void OnMessage(Message *msg);
-  void Post(uint32 task_id, MessageData *pdata);
+  void Post(uint32 task_id, MessageData::Ptr pdata);
   bool Start();
   bool Stop();
  private:
@@ -61,13 +61,13 @@ class SessionManager : public noncopyable,
   void OnDisconnectMessage(Message *msg);
   void OnRequestMessage(Message *msg);
 
-  void OnSessionPacketEvent(vzsdk::Session *session,
+  void OnSessionPacketEvent(Session::Ptr session,
                             const char *data,
                             uint32 data_size,
                             uint8 packet_type);
-  void OnSessionConnectedEvent(vzsdk::Session *session,
+  void OnSessionConnectedEvent(Session::Ptr session,
                                uint32 connect_id);
-  void OnSessionCloseEvent(vzsdk::Session *session,
+  void OnSessionCloseEvent(Session::Ptr session,
                            int code,
                            uint32 connect_id);
  private:

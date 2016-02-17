@@ -119,6 +119,7 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/task.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
+    
 	)
 
 SOURCE_GROUP(base FILES

@@ -52,14 +52,14 @@ bool VzsdkServices::Stop() {
 
 int VzsdkServices::ConnectServer(const std::string ip_addr, uint16 port) {
   SocketAddress remote_address(ip_addr, port);
-  ConnectTask connect_task(queue_layer_.get(),
-                           DEFAULT_TIMEOUT,
-                           remote_address);
-  Message::Ptr msg = connect_task.SyncProcessTask();
+  Task::Ptr connect_task(new ConnectTask(queue_layer_.get(),
+                                         DEFAULT_TIMEOUT,
+                                         remote_address));
+  Message::Ptr msg = connect_task->SyncProcessTask();
   if(!msg) {
     return DEFAULT_RESULT_TIMEOUT;
   }
-  Stanza *stanza = static_cast<Stanza *>(msg->pdata);
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
   return stanza->session_id();
 }
 

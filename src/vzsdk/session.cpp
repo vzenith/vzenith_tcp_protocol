@@ -90,8 +90,8 @@ void Session::UinitSocket() {
   }
 }
 
-void Session::OnReadEvent(AsyncSocket* async_socket) {
-  ASSERT(async_socket_.get() == async_socket);
+void Session::OnReadEvent(AsyncSocket::Ptr async_socket) {
+  ASSERT(async_socket_ == async_socket);
   while(1) {
     int recv_size = async_socket_->Recv(temp_buffer_, DEFAULT_TEMP_BUFFER_SIZE);
     if(recv_size == SOCKET_ERROR) {
@@ -104,22 +104,22 @@ void Session::OnReadEvent(AsyncSocket* async_socket) {
   }
 }
 
-void Session::OnWriteEvent(AsyncSocket* async_socket) {
-  ASSERT(async_socket_.get() == async_socket);
+void Session::OnWriteEvent(AsyncSocket::Ptr async_socket) {
+  ASSERT(async_socket_ == async_socket);
   TryToWriteData();
 }
 
-void Session::OnConnectEvent(AsyncSocket* async_socket) {
-  ASSERT(async_socket_.get() == async_socket);
+void Session::OnConnectEvent(AsyncSocket::Ptr async_socket) {
+  ASSERT(async_socket_ == async_socket);
   // Connect the remote server succeed
-  SignalSessionConnectedEvent(this, connect_id_);
+  SignalSessionConnectedEvent(shared_from_this(), connect_id_);
   AsyncWaitNextHeadrtbeatEvent();
 }
 
-void Session::OnCloseEvent(AsyncSocket* async_socket, int code) {
-  ASSERT(async_socket_.get() == async_socket);
-  SignalSessionCloseEvent(this, code, connect_id_);
+void Session::OnCloseEvent(AsyncSocket::Ptr async_socket, int code) {
+  ASSERT(async_socket_ == async_socket);
   UinitSocket();
+  SignalSessionCloseEvent(shared_from_this(), code, connect_id_);
 }
 
 void Session::ProcessInput() {
@@ -180,9 +180,9 @@ void Session::OnHandleInputPacket(const char *data,
     ASSERT(data_size == 0);
     // WriteHeartbeat();
   } else if (packet_type == PACKET_TYPE_JSON) {
-    SignalSessionPacketEvent(this, data, data_size, packet_type);
+    SignalSessionPacketEvent(shared_from_this(), data, data_size, packet_type);
   } else if (packet_type == PACKET_TYPE_BINARY) {
-    SignalSessionPacketEvent(this, data, data_size, packet_type);
+    SignalSessionPacketEvent(shared_from_this(), data, data_size, packet_type);
   } else {
     LOG(LS_ERROR) << "Packet type error";
   }

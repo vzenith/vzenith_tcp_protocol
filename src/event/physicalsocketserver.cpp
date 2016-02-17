@@ -481,7 +481,7 @@ class PhysicalSocket : public AsyncSocket, public sigslot::has_slots<> {
 
     if (error) {
       error_ = error;
-      SignalCloseEvent(this, error_);
+      SignalCloseEvent(shared_from_this(), error_);
     }
   }
 
@@ -1108,19 +1108,19 @@ class SocketDispatcher : public Dispatcher, public PhysicalSocket {
       dbg_addr_ = "Connected @ ";
       dbg_addr_.append(GetRemoteAddress().ToString());
 #endif  // _DEBUG
-      SignalConnectEvent(this);
+      SignalConnectEvent(shared_from_this());
     }
     if (((ff & DE_ACCEPT) != 0) && (id_ == cache_id)) {
       enabled_events_ &= ~DE_ACCEPT;
-      SignalReadEvent(this);
+      SignalReadEvent(shared_from_this());
     }
     if ((ff & DE_READ) != 0) {
       enabled_events_ &= ~DE_READ;
-      SignalReadEvent(this);
+      SignalReadEvent(shared_from_this());
     }
     if (((ff & DE_WRITE) != 0) && (id_ == cache_id)) {
       enabled_events_ &= ~DE_WRITE;
-      SignalWriteEvent(this);
+      SignalWriteEvent(shared_from_this());
     }
     if (((ff & DE_CLOSE) != 0) && (id_ == cache_id)) {
       signal_close_ = true;
@@ -1146,7 +1146,7 @@ class SocketDispatcher : public Dispatcher, public PhysicalSocket {
 
     state_ = CS_CLOSED;
     signal_close_ = false;
-    SignalCloseEvent(this, signal_err_);
+    SignalCloseEvent(shared_from_this(), signal_err_);
     return true;
   }
 };

@@ -371,7 +371,7 @@ void Thread::Stop() {
   Join();
 }
 
-void Thread::Send(MessageHandler *phandler, uint32 id, MessageData *pdata) {
+void Thread::Send(MessageHandler *phandler, uint32 id, MessageData::Ptr pdata) {
   if (fStop_)
     return;
 
@@ -471,7 +471,7 @@ void Thread::Clear(MessageHandler *phandler, uint32 id,
       if (removed) {
         removed->push_back(smsg.msg);
       } else {
-        delete smsg.msg.pdata;
+        //delete smsg.msg.pdata;
       }
       iter = sendlist_.erase(iter);
       *smsg.ready = true;

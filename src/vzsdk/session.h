@@ -43,23 +43,24 @@ const uint8 PACKET_TYPE_JSON           = 0X00;
 
 class Session : public noncopyable,
   public sigslot::has_slots<>,
+  public boost::enable_shared_from_this<Session>,
   public MessageHandler {
  public:
   Session(Thread* async_thread);
   virtual ~Session();
 
-  typedef shared_ptr<Session> Ptr;
+  typedef boost::shared_ptr<Session> Ptr;
 
   virtual void OnMessage(Message* msg);
   // ready to read
-  sigslot::signal4<Session*,
+  sigslot::signal4<Session::Ptr,
           const char *,
           uint32,
           uint8> SignalSessionPacketEvent;
   // connected
-  sigslot::signal2<Session*, uint32> SignalSessionConnectedEvent;
+  sigslot::signal2<Session::Ptr, uint32> SignalSessionConnectedEvent;
   // closed
-  sigslot::signal3<Session*, int, uint32> SignalSessionCloseEvent;
+  sigslot::signal3<Session::Ptr, int, uint32> SignalSessionCloseEvent;
 
   Socket::ConnState GetState() const {
     if(async_socket_) {
@@ -80,10 +81,10 @@ class Session : public noncopyable,
     return session_id_;
   }
  public:
-  void OnReadEvent(AsyncSocket* async_socket);
-  void OnWriteEvent(AsyncSocket* async_socket);
-  void OnConnectEvent(AsyncSocket* async_socket);
-  void OnCloseEvent(AsyncSocket* async_socket, int code);
+  void OnReadEvent(AsyncSocket::Ptr async_socket);
+  void OnWriteEvent(AsyncSocket::Ptr async_socket);
+  void OnConnectEvent(AsyncSocket::Ptr async_socket);
+  void OnCloseEvent(AsyncSocket::Ptr async_socket, int code);
  private:
   void InitSocket();
   void UinitSocket();
@@ -105,7 +106,7 @@ class Session : public noncopyable,
   static const uint8 HEADER_Z                   = 'Z';
   static const int DEFAULT_HEADBEAT_TIMEOUT     = 5 * 1000;
 
-  scoped_ptr<AsyncSocket> async_socket_;
+  boost::shared_ptr<AsyncSocket> async_socket_;
   Thread *async_thread_;
   char temp_buffer_[DEFAULT_TEMP_BUFFER_SIZE];
   ByteBuffer read_buffer_;

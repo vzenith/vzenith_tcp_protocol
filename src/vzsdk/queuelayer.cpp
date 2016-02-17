@@ -33,17 +33,17 @@ namespace vzsdk {
 
 class ReqTaskStanza : public Stanza {
  public:
-  ReqTaskStanza(Task *task)
+  ReqTaskStanza(Task::Ptr task)
     : Stanza(task->message_type()),
       task_(task) {
   }
   virtual ~ReqTaskStanza() {
   }
-  Task *task() {
+  Task::Ptr task() {
     return task_;
   }
  private:
-  Task *task_;
+  Task::Ptr task_;
 };
 
 QueueLayer::QueueLayer() {
@@ -53,7 +53,7 @@ QueueLayer::~QueueLayer() {
 }
 
 void QueueLayer::OnMessage(Message *msg) {
-  Stanza *stanza = static_cast<Stanza *>(msg->pdata);
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
   if(stanza->stanza_type() > REQ_RES_BREAK) {
     OnResMessage(msg);
   } else if (stanza->stanza_type() < REQ_RES_BREAK) {
@@ -64,19 +64,19 @@ void QueueLayer::OnMessage(Message *msg) {
 }
 
 void QueueLayer::OnReqMessage(Message *msg) {
-  ReqTaskStanza *stanza_task = static_cast<ReqTaskStanza *>(msg->pdata);
-  Task *task = stanza_task->task();
+  ReqTaskStanza *stanza_task = static_cast<ReqTaskStanza *>(msg->pdata.get());
+  Task::Ptr task = stanza_task->task();
   bool add_res = AddTask(task);
   ASSERT(add_res);
   session_manager_->Post(task->task_id(), task->message_data());
 }
 
 void QueueLayer::OnResMessage(Message *msg) {
-  Stanza *stanza = static_cast<Stanza *>(msg->pdata);
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
   switch (stanza->stanza_type()) {
   case RES_DISCONNECTED_EVENT:
   case RES_CONNECTED_EVENT:
-    OnConnectedEvent(msg->message_id, stanza);
+    OnConnectedEvent(msg->message_id, msg);
     break;
   case RES_STANZA_EVENT:
     break;
@@ -85,19 +85,19 @@ void QueueLayer::OnResMessage(Message *msg) {
   }
 }
 
-void QueueLayer::OnConnectedEvent(uint32 task_id, Stanza *stanza) {
-  Task *task = FindTask(task_id);
+void QueueLayer::OnConnectedEvent(uint32 task_id, Message *msg) {
+  Task::Ptr task = FindTask(task_id);
   if(task != NULL) {
-    task->HandleMessage(stanza);
+    task->HandleMessage(msg->pdata);
   }
 }
 
-void QueueLayer::Post(uint32 id, MessageData *pdata) {
+void QueueLayer::Post(uint32 id, MessageData::Ptr pdata) {
   queue_thread_->Post(this, id, pdata);
 }
 
-void QueueLayer::Post(Task *task) {
-  ReqTaskStanza *stanza_task = new ReqTaskStanza(task);
+void QueueLayer::Post(Task::Ptr task) {
+  MessageData::Ptr stanza_task(new ReqTaskStanza(task));
   queue_thread_->Post(this, task->task_id(), stanza_task);
 }
 
@@ -115,17 +115,17 @@ bool QueueLayer::Stop() {
 }
 
 
-bool QueueLayer::AddTask(Task* task) {
-  std::map<uint32, Task*>::iterator iter = tasks_.find(task->task_id());
+bool QueueLayer::AddTask(Task::Ptr task) {
+  std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task->task_id());
   if(iter != tasks_.end()) {
     return false;
   }
-  tasks_.insert(std::pair<uint32, Task*>(task->task_id(), task));
+  tasks_.insert(std::pair<uint32, Task::Ptr>(task->task_id(), task));
   return true;
 }
 
 bool QueueLayer::RemoveTask(uint32 task_id) {
-  std::map<uint32, Task*>::iterator iter = tasks_.find(task_id);
+  std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task_id);
   if(iter == tasks_.end()) {
     return false;
   }
@@ -133,13 +133,12 @@ bool QueueLayer::RemoveTask(uint32 task_id) {
   return true;
 }
 
-Task *QueueLayer::FindTask(uint32 task_id) {
-  std::map<uint32, Task*>::iterator iter = tasks_.find(task_id);
+Task::Ptr QueueLayer::FindTask(uint32 task_id) {
+  std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task_id);
   if(iter == tasks_.end()) {
     return NULL;
   }
   return iter->second;
-
 }
 
 }

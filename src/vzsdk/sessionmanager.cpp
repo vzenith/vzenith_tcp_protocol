@@ -41,7 +41,7 @@ SessionManager::~SessionManager() {
 }
 
 void SessionManager::OnMessage(Message *msg) {
-  Stanza *stanza = static_cast<Stanza *>(msg->pdata);
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
   switch (stanza->stanza_type()) {
   case vzsdk::REQ_CONNECT_SERVER:
     OnConnectMessage(msg);
@@ -58,14 +58,14 @@ void SessionManager::OnMessage(Message *msg) {
   }
 }
 
-void SessionManager::Post(uint32 task_id, MessageData *pdata) {
+void SessionManager::Post(uint32 task_id, MessageData::Ptr pdata) {
   async_thread_->Post(this, task_id, pdata);
 }
 
 void SessionManager::OnConnectMessage(Message *msg) {
-  ReqConnectData *req_connect_data = static_cast<ReqConnectData *>(msg->pdata);
+  ReqConnectData *req_connect_data =
+    static_cast<ReqConnectData *>(msg->pdata.get());
   Session::Ptr session(new Session(async_thread_.get()));
-  BindSessionSignal(session);
   bool add_res = AddSession(session);
   ASSERT(add_res);
   session->Start(req_connect_data->address(), msg->message_id);
@@ -124,6 +124,8 @@ bool SessionManager::AddSession(Session::Ptr session) {
   if(iter != async_sessions_.end()) {
     return false;
   }
+
+  BindSessionSignal(session);
   async_sessions_.insert(std::pair<int, Session::Ptr>(
                            session->session_id(),
                            session));
@@ -136,12 +138,13 @@ bool SessionManager::RemoveSession(uint32 session_id) {
   if(iter == async_sessions_.end()) {
     return false;
   }
+  UnbindSessionSignal(iter->second);
   async_sessions_.erase(iter);
   return true;
 }
 
 void SessionManager::OnSessionPacketEvent(
-  vzsdk::Session *session,
+  vzsdk::Session::Ptr session,
   const char *data,
   uint32 data_size,
   uint8 packet_type) {
@@ -150,20 +153,21 @@ void SessionManager::OnSessionPacketEvent(
 }
 
 void SessionManager::OnSessionConnectedEvent(
-  vzsdk::Session *session,
+  vzsdk::Session::Ptr session,
   uint32 connect_id) {
   //
-  Stanza *stanza = new Stanza(RES_CONNECTED_EVENT, session->session_id());
+  MessageData::Ptr stanza(new Stanza(RES_CONNECTED_EVENT,
+                                     session->session_id()));
   queue_layer_->Post(connect_id, stanza);
-  LOG(LS_INFO) << "remote connect succeed";
+  LOG(LS_INFO) << "remote connect successfull";
 }
 
 void SessionManager::OnSessionCloseEvent(
-  vzsdk::Session *session,
+  vzsdk::Session::Ptr session,
   int code,
   uint32 connect_id) {
   //
-  Stanza *stanza = new Stanza(RES_DISCONNECTED_EVENT);
+  MessageData::Ptr stanza(new Stanza(RES_DISCONNECTED_EVENT));
   queue_layer_->Post(connect_id, stanza);
   LOG(LS_INFO) << "remote disconnected";
   bool remove_res = RemoveSession(session->session_id());

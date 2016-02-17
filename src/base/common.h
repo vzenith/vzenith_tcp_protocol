@@ -30,6 +30,7 @@
 
 #include "base/basictypes.h"
 #include "base/constructormagic.h"
+#include "boost/boost_settings.hpp"
 
 #if defined(_MSC_VER)
 // warning C4355: 'this' : used in base member initializer list
