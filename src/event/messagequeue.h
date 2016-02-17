@@ -225,17 +225,24 @@ class MessageQueue {
   virtual bool Get(Message *pmsg, int cmsWait = kForever,
                    bool process_io = true);
   virtual bool Peek(Message *pmsg, int cmsWait = 0);
-  virtual void Post(MessageHandler *phandler, uint32 id = 0,
-                    MessageData::Ptr pdata = NULL, bool time_sensitive = false);
-  virtual void PostDelayed(int cmsDelay, MessageHandler *phandler,
-                           uint32 id = 0, MessageData::Ptr pdata = NULL) {
+  virtual void Post(MessageHandler *phandler,
+                    uint32 id = 0,
+                    MessageData::Ptr pdata = MessageData::Ptr(),
+                    bool time_sensitive = false);
+  virtual void PostDelayed(int cmsDelay,
+                           MessageHandler *phandler,
+                           uint32 id = 0,
+                           MessageData::Ptr pdata = MessageData::Ptr()) {
     return DoDelayPost(cmsDelay, TimeAfter(cmsDelay), phandler, id, pdata);
   }
-  virtual void PostAt(uint32 tstamp, MessageHandler *phandler,
-                      uint32 id = 0, MessageData::Ptr pdata = NULL) {
+  virtual void PostAt(uint32 tstamp,
+                      MessageHandler *phandler,
+                      uint32 id = 0,
+                      MessageData::Ptr pdata = MessageData::Ptr()) {
     return DoDelayPost(TimeUntil(tstamp), tstamp, phandler, id, pdata);
   }
-  virtual void Clear(MessageHandler *phandler, uint32 id = MQID_ANY,
+  virtual void Clear(MessageHandler *phandler,
+                     uint32 id = MQID_ANY,
                      MessageList* removed = NULL);
   virtual void Dispatch(Message *pmsg);
   virtual void ReceiveSends();

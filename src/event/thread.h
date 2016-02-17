@@ -164,7 +164,7 @@ class Thread : public MessageQueue {
   virtual void Run();
 
   virtual void Send(MessageHandler *phandler, uint32 id = 0,
-      MessageData::Ptr pdata = NULL);
+      MessageData::Ptr pdata = MessageData::Ptr());
 
   // From MessageQueue
   virtual void Clear(MessageHandler *phandler, uint32 id = MQID_ANY,
