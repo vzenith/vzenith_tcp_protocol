@@ -868,24 +868,24 @@ class SocketDispatcher : public Dispatcher, public PhysicalSocket {
     // something like a READ followed by a CONNECT, which would be odd.
     if ((ff & DE_CONNECT) != 0) {
       enabled_events_ &= ~DE_CONNECT;
-      SignalConnectEvent(this);
+      SignalConnectEvent(shared_from_this());
     }
     if ((ff & DE_ACCEPT) != 0) {
       enabled_events_ &= ~DE_ACCEPT;
-      SignalReadEvent(this);
+      SignalReadEvent(shared_from_this());
     }
     if ((ff & DE_READ) != 0) {
       enabled_events_ &= ~DE_READ;
-      SignalReadEvent(this);
+      SignalReadEvent(shared_from_this());
     }
     if ((ff & DE_WRITE) != 0) {
       enabled_events_ &= ~DE_WRITE;
-      SignalWriteEvent(this);
+      SignalWriteEvent(shared_from_this());
     }
     if ((ff & DE_CLOSE) != 0) {
       // The socket is now dead to us, so stop checking it.
       enabled_events_ = 0;
-      SignalCloseEvent(this, err);
+      SignalCloseEvent(shared_from_this(), err);
     }
   }
 
