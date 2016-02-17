@@ -575,7 +575,7 @@ StreamResult AsyncWriteStream::Write(const void* data, size_t data_len,
     // If there's stuff already in the buffer, then we already called
     // Post and the write_thread_ hasn't pulled it out yet, so we
     // don't need to re-Post.
-    write_thread_->Post(this, 0, NULL);
+    write_thread_->Post(this, 0);
   }
   // Return immediately, assuming that it works.
   if (written) {
