@@ -136,7 +136,7 @@ bool QueueLayer::RemoveTask(uint32 task_id) {
 Task::Ptr QueueLayer::FindTask(uint32 task_id) {
   std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task_id);
   if(iter == tasks_.end()) {
-    return NULL;
+    return Task::Ptr();
   }
   return iter->second;
 }

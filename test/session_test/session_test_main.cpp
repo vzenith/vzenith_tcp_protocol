@@ -53,7 +53,7 @@ class SessionManager : public vzsdk::MessageHandler,
     }
   }
  private:
-  void OnSessionPacketEvent(vzsdk::Session *session,
+  void OnSessionPacketEvent(vzsdk::Session::Ptr session,
                             const char *data,
                             uint32 data_size,
                             uint8 packet_type) {
@@ -61,12 +61,12 @@ class SessionManager : public vzsdk::MessageHandler,
     LOG(LS_INFO).write(data, data_size);
   }
 
-  void OnSessionConnectedEvent(vzsdk::Session *session, uint32 id) {
+  void OnSessionConnectedEvent(vzsdk::Session::Ptr session, uint32 id) {
     //
     LOG(LS_INFO) << "remote connect succeed";
   }
 
-  void OnSessionCloseEvent(vzsdk::Session *session, int code, uint32 id) {
+  void OnSessionCloseEvent(vzsdk::Session::Ptr session, int code, uint32 id) {
     //
     LOG(LS_INFO) << "remote disconnected";
   }
