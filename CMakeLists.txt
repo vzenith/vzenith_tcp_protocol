@@ -14,7 +14,6 @@ option(ENABLE_UNIT_TEST "Set to ON to USE GTest unit testing." ON)
 option(COVERALLS "Generate coveralls data" OFF)
 ##########################################################
 ## Step 1 
-SET(JSON_CPP ${PROJECT_SOURCE_DIR}/third_part/jsoncpp)
 SET(LIBEVENT ${PROJECT_SOURCE_DIR}/third_part/libevent)
 SET(GTEST ${PROJECT_SOURCE_DIR}/third_part/gtest)
 
@@ -29,7 +28,6 @@ endif()
 ##1. INCLUDE_DIRECTORES
 MESSAGE(STATUS "Step 1 :  Add include directores")
 SET(TCP_SDK_INCLUDE_DIR
-	${JSON_CPP}/include
 	${PROJECT_SOURCE_DIR}/src
 	${PROJECT_SOURCE_DIR}/third_part
 	${LIBEVENT}/include
@@ -45,7 +43,6 @@ IF(WIN32)
 		${PROJECT_SOURCE_DIR}/lib/win
 		)
 	SET(TCP_SDK_LINK_LIB
-		jsoncpp.lib
 		winmm.lib
 		libvztcpsdk.lib
 		)
@@ -56,7 +53,6 @@ ELSE()
 		)
 	SET(TCP_SDK_LINK_LIB
 		libvztcpsdk.a
-		libjsoncpp.a
 		-lpthread
 		-lrt
 		)

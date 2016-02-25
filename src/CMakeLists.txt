@@ -107,6 +107,10 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/event/physicalsocketserver.cpp
 	
 	
+	${CMAKE_CURRENT_SOURCE_DIR}/json/json.h
+	${CMAKE_CURRENT_SOURCE_DIR}/json/jsoncpp.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/json/json-forwards.h
+	
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkbase.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.cpp
@@ -124,6 +128,7 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
+	
     
 	)
 
@@ -184,6 +189,12 @@ SOURCE_GROUP(event FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/event/messagehandler.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/event/physicalsocketserver.h
 	${CMAKE_CURRENT_SOURCE_DIR}/event/physicalsocketserver.cpp
+	)
+
+SOURCE_GROUP(json FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/json/json.h
+	${CMAKE_CURRENT_SOURCE_DIR}/json/jsoncpp.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/json/json-forwards.h
 	)
 
 SOURCE_GROUP(vzsdk FILES
