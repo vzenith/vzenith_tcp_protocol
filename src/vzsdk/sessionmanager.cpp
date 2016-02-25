@@ -37,7 +37,7 @@ SessionManager::SessionManager(QueueLayer *queue_layer)
 }
 
 SessionManager::~SessionManager() {
-  LOG(LS_INFO) << "Destory session manager";
+  // LOG(LS_INFO) << "Destory session manager";
 }
 
 void SessionManager::OnMessage(Message *msg) {
@@ -72,9 +72,40 @@ void SessionManager::OnConnectMessage(Message *msg) {
 }
 
 void SessionManager::OnDisconnectMessage(Message *msg) {
+  ReqDisconnectData *req_disconnect_data =
+    static_cast<ReqDisconnectData *>(msg->pdata.get());
+  Session::Ptr session = FindSession(req_disconnect_data->session_id());
+  MessageData::Ptr stanza;
+  if(session) {
+    session->Stop();
+    RemoveSession(req_disconnect_data->session_id());
+    stanza.reset(new Stanza(RES_DISCONNECTED_EVENT_SUCCEED,
+                            session->session_id()));
+  } else {
+    stanza.reset(new Stanza(RES_DISCONNECTED_EVENT_FAILURE,
+                            req_disconnect_data->session_id()));
+  }
+  queue_layer_->Post(msg->message_id, stanza);
 }
 
 void SessionManager::OnRequestMessage(Message *msg) {
+  RequestData *req_data =
+    static_cast<RequestData *>(msg->pdata.get());
+  Session::Ptr session = FindSession(req_data->session_id());
+  if(session) {
+    Json::FastWriter fw;
+    std::string req_str = fw.write(req_data->req_json());
+    session->AsyncWrite(req_str.c_str(), req_str.size());
+    if(req_data->is_push()) {
+      MessageData::Ptr stanza(new Stanza(RES_PUSH_SUCCEED,
+                                         req_data->session_id()));
+      queue_layer_->Post(msg->message_id, stanza);
+    }
+  } else {
+    MessageData::Ptr stanza(new Stanza(RES_SESSION_NOT_FOUND,
+                                       req_data->session_id()));
+    queue_layer_->Post(msg->message_id, stanza);
+  }
 }
 
 bool SessionManager::Start() {
@@ -143,13 +174,33 @@ bool SessionManager::RemoveSession(uint32 session_id) {
   return true;
 }
 
+Session::Ptr SessionManager::FindSession(uint32 session_id) {
+  std::map<uint32, Session::Ptr>::iterator iter =
+    async_sessions_.find(session_id);
+  if(iter == async_sessions_.end()) {
+    return Session::Ptr();
+  }
+  return iter->second;
+}
+
 void SessionManager::OnSessionPacketEvent(
   vzsdk::Session::Ptr session,
   const char *data,
   uint32 data_size,
   uint8 packet_type) {
   //
-  LOG(LS_INFO).write(data, data_size);
+  // LOG(LS_INFO).write(data, data_size);
+  Json::Value json_res;
+  Json::Reader reader;
+  std::string res_data(data, data_size);
+  if(!reader.parse(data, FindEndString(data, data_size), json_res)) {
+    LOG(LS_ERROR) << reader.getFormattedErrorMessages();
+    return;
+  }
+  MessageData::Ptr stanza(new ResponseData(session->session_id(),
+                          json_res,
+                          res_data));
+  queue_layer_->Post(0, stanza);
 }
 
 void SessionManager::OnSessionConnectedEvent(
@@ -167,11 +218,21 @@ void SessionManager::OnSessionCloseEvent(
   int code,
   uint32 connect_id) {
   //
-  MessageData::Ptr stanza(new Stanza(RES_DISCONNECTED_EVENT));
+  MessageData::Ptr stanza(new Stanza(RES_DISCONNECTED_EVENT_FAILURE,
+                                     session->session_id()));
   queue_layer_->Post(connect_id, stanza);
   LOG(LS_INFO) << "remote disconnected";
   bool remove_res = RemoveSession(session->session_id());
   ASSERT(remove_res);
+}
+
+const char *SessionManager::FindEndString(const char *data, uint32 data_size) {
+  for(uint32 i = 0; i < data_size; i++) {
+    if(data[i] == '\0') {
+      return data + i;
+    }
+  }
+  return data + data_size;
 }
 
 }

@@ -107,6 +107,7 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/event/physicalsocketserver.cpp
 	
 	
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkbase.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/queuelayer.h
@@ -117,6 +118,10 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/sessionmanager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/task.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/task.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
     
@@ -182,6 +187,7 @@ SOURCE_GROUP(event FILES
 	)
 
 SOURCE_GROUP(vzsdk FILES
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkbase.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/internalmessage.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/queuelayer.h
@@ -192,6 +198,10 @@ SOURCE_GROUP(vzsdk FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/sessionmanager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/task.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/task.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
 	)

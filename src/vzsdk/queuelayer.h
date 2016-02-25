@@ -49,19 +49,24 @@ class QueueLayer : public noncopyable,
   }
   void Post(uint32 id, MessageData::Ptr pdata);
   void Post(Task::Ptr task);
+  void AsyncRemoveTask(Task::Ptr task);
  private:
   void OnReqMessage(Message *msg);
   void OnResMessage(Message *msg);
 
-  void OnConnectedEvent(uint32 task_id, Message *msg);
+  void OnRemoveTaskMessage(Message *msg);
+  void OnTranslateToAsyncLayer(Message *msg);
+  void OnAddPushTaskMessage(Message *msg);
+  void OntranslateToSyncLayer(Message *msg);
 
   bool AddTask(Task::Ptr task);
   bool RemoveTask(uint32 task_id);
   Task::Ptr FindTask(uint32 task_id);
  private:
-  scoped_ptr<Thread> queue_thread_;
-  scoped_ptr<SessionManager> session_manager_;
+  boost::shared_ptr<Thread> queue_thread_;
+  boost::shared_ptr<SessionManager> session_manager_;
   std::map<uint32, Task::Ptr> tasks_;
+  Task::Ptr push_task_;
 };
 }
 

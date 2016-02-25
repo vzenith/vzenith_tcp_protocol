@@ -28,12 +28,33 @@
 #include <iostream>
 #include "base/logging.h"
 #include "vzsdk/vzsdkservices.h"
+#include <sstream>
 
 int main(void) {
   vzsdk::VzsdkServices vzsdk_services;
   vzsdk_services.Start();
-  int session_id = vzsdk_services.ConnectServer("192.168.4.167", 8131);
+  std::string sn;
+  int session_id = vzsdk_services.ConnectServer("192.168.4.78", 8131);
   LOG(LS_INFO) << "session_id = " << session_id;
+
+  vzsdk::IvsPushHandle::Ptr ivs_handle(
+    new vzsdk::IvsPushHandle("ivs_result"));
+  vzsdk_services.GetDeviceSN(session_id, &sn);
+  vzsdk_services.ReciveIvsResult(session_id,
+                                 ivs_handle,
+                                 true,
+                                 vzsdk::VzsdkServices::FORMAT_JSON,
+                                 true,
+                                 vzsdk::VzsdkServices::FULL_IMG);
+  vzsdk_services.GetDeviceSN(session_id, &sn);
+
+  //if(vzsdk_services.GetDeviceSN(session_id, &sn) < 0) {
+  //  LOG(LS_ERROR) << "Get device sn number getting an error";
+  //} else {
+  //  LOG(LS_INFO) << "The Device SN Number is " << sn;
+  //}
+  // vzsdk_services.DisconnectServer(session_id);
+  // LOG(LS_INFO) << "session disconnected";
 #ifdef WIN32
   Sleep(1000000);
 #endif

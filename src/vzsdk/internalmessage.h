@@ -31,6 +31,7 @@
 #include "base/noncopyable.h"
 #include "base/socketaddress.h"
 #include "event/messagequeue.h"
+#include "json/json.h"
 
 namespace vzsdk {
 
@@ -41,10 +42,15 @@ enum StanzaType {
   REQ_CONNECT_SERVER,
   REQ_DISCONNECT_SERVER,
   REQ_SEND_REQUESTION,
+  REQ_ADD_PUSH_TASK,
+  REQ_REMOVE_TASK_EVENT,
 
   REQ_RES_BREAK = 0XFF,
 
-  RES_DISCONNECTED_EVENT,
+  RES_DISCONNECTED_EVENT_FAILURE,
+  RES_DISCONNECTED_EVENT_SUCCEED,
+  RES_SESSION_NOT_FOUND,
+  RES_PUSH_SUCCEED,
   RES_CONNECTED_EVENT,
   RES_STANZA_EVENT,
 };
@@ -74,9 +80,11 @@ class Stanza : public MessageData {
   uint32 session_id_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 class ReqConnectData : public Stanza {
  public:
-  ReqConnectData(SocketAddress &address, uint32 stanza_type);
+  ReqConnectData(SocketAddress &address);
   SocketAddress &address() {
     return address_;
   }
@@ -84,6 +92,46 @@ class ReqConnectData : public Stanza {
   SocketAddress address_;
 };
 
+//------------------------------------------------------------------------------
+class ReqDisconnectData : public Stanza {
+ public:
+  ReqDisconnectData(uint32 session_id);
+};
+
+//------------------------------------------------------------------------------
+class RequestData : public Stanza {
+ public:
+  RequestData(uint32 session_id,
+              const Json::Value &req_json,
+              bool is_push = false);
+  const Json::Value &req_json() {
+    return req_json_;
+  }
+  bool is_push() {
+    return is_push_;
+  }
+ private:
+  Json::Value req_json_;
+  bool is_push_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
+class ResponseData : public Stanza {
+ public:
+  ResponseData(uint32 session_id,
+               const Json::Value &res_json,
+               const std::string &res_data);
+  const Json::Value res_json() const {
+    return res_json_;
+  }
+  const std::string res_data() const {
+    return res_data_;
+  }
+ private:
+  Json::Value res_json_;
+  std::string res_data_;
+};
 }
 
 #endif // SRC_HSHA_INTERNAL_MESSAGE_H_

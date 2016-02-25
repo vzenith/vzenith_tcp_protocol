@@ -30,6 +30,7 @@
 
 #include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
+#include "vzsdk/vzsdkpushmanager.h"
 
 namespace vzsdk {
 
@@ -40,11 +41,41 @@ class VzsdkServices : public noncopyable {
   bool Start();
   bool Stop();
   //
+  void AddPushHandle(PushHandle::Ptr handle);
+  void RemovePushHandle(PushHandle::Ptr handle);
+  //
   int ConnectServer(const std::string ip_addr, uint16 port);
+  int DisconnectServer(uint32 session_id);
+  int GetDeviceSN(uint32 session_id, std::string *sn);
+  enum IvsFormat {
+    FORMAT_BIN,
+    FORMAT_JSON
+  };
+  enum IvsImgType {
+    FULL_IMG,
+    SMALL_IMG,
+    FULL_AND_SMALL_IMG
+  };
+  int ReciveIvsResult(uint32 session_id,
+                      PushHandle::Ptr handle,
+                      bool enable_result,
+                      IvsFormat format,
+                      bool enable_img,
+                      IvsImgType img_type);
+ private:
+  std::string IvsFormatToString(IvsFormat ivs_format);
  private:
   static const uint32 DEFAULT_TIMEOUT = 5000;
+  static const uint32 FOREVER_TIMEOUT = 0XFFFF;
   static const uint32 DEFAULT_RESULT_TIMEOUT = 0;
-  scoped_ptr<QueueLayer> queue_layer_;
+  // return result
+  static const uint32 SESSION_ID_INVALUE = -1;
+  static const uint32 SESSION_NOT_FOUND = -2;
+  static const uint32 UNKOWN_ERROR = -3;
+  static const uint32 REQ_SUCCEED = 1;
+  boost::shared_ptr<QueueLayer> queue_layer_;
+  PushManagerTask *push_manager_task_;
+  boost::scoped_ptr<Thread> push_thread_;
 };
 
 }

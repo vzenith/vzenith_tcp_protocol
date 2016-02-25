@@ -183,7 +183,7 @@ bool MessageQueue::Peek(Message *pmsg, int cmsWait) {
 bool MessageQueue::Get(Message *pmsg, int cmsWait, bool process_io) {
   // Return and clear peek if present
   // Always return the peek if it exists so there is Peek/Get symmetry
-
+  // LOG(LS_INFO) << "Debug Message";
   if (fPeekKeep_) {
     *pmsg = msgPeek_;
     fPeekKeep_ = false;

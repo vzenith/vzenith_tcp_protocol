@@ -39,7 +39,7 @@ Session::Session(Thread* async_thread)
 }
 
 Session::~Session() {
-  LOG(LS_WARNING) << "Session destory ... ...";
+  // LOG(LS_WARNING) << "Session destory ... ...";
 }
 
 void Session::OnMessage(Message* msg) {
@@ -123,9 +123,12 @@ void Session::OnCloseEvent(AsyncSocket::Ptr async_socket, int code) {
 
 void Session::ProcessInput() {
   ASSERT(read_buffer_.Length() != 0);
-  const char *data = read_buffer_.Data();
-  std::size_t data_size = read_buffer_.Length();
   while(1) {
+    std::size_t data_size = read_buffer_.Length();
+    if(data_size == 0) {
+      break;
+    }
+    const char *data = read_buffer_.Data();
     int process_size = ProcessPacketProtocol(data, data_size);
     if(process_size == PARSE_PACKET_NEED_MORE_DATA) {
       break;
@@ -160,7 +163,7 @@ int Session::ProcessPacketProtocol(const char *data, std::size_t data_size) {
     // 4. Read packet size
     memcpy((void *)&packet_size, (const void *)(data + offset), sizeof(uint32));
     packet_size = ntohl(packet_size);
-    offset++;
+    offset += 4;
     // 5. Read packet data
     if(data_size - offset >= packet_size) {
       OnHandleInputPacket(data + offset, packet_size, packet_type);

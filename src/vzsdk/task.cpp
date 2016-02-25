@@ -27,20 +27,31 @@
 
 #include "vzsdk/task.h"
 #include "vzsdk/queuelayer.h"
+#include "base/logging.h"
+#include "vzsdk/vzsdkbase.h"
+
+#ifndef __has_feature
+#define __has_feature(x) 0  // Compatibility with non-clang or LLVM compilers.
+#endif  // __has_feature
 
 namespace vzsdk {
 
 // The task id start by 0X01
 uint32 Task::unequal_task_id_ = 0X01;
 
-Task::Task(QueueLayer *queue_layer, uint32 timeout)
+Task::Task(QueueLayer *queue_layer, uint32 timeout, Thread *task_thread)
   :queue_layer_(queue_layer),
-   timeout_(timeout) {
-  task_thread_ = Thread::Current();
+   timeout_(timeout),
+   task_thread_(task_thread) {
+  if(task_thread_ == NULL) {
+    task_thread_ = Thread::Current();
+  }
   task_id_ = unequal_task_id_++;
+  // LOG(LS_INFO) << "Create task " << task_id_;
 }
 
 Task::~Task() {
+  // LOG(LS_INFO) << "Destory task " << task_id_;
 }
 
 void Task::OnMessage(Message *msg) {
@@ -49,11 +60,17 @@ void Task::OnMessage(Message *msg) {
 
 Message::Ptr Task::SyncProcessTask() {
   PostTask();
-  return WaitTaskDone();
+  Message::Ptr msg = WaitTaskDone();
+  queue_layer_->AsyncRemoveTask(shared_from_this());
+  return msg;
 }
 
-void Task::HandleMessage(MessageData::Ptr pdata) {
-  task_thread_->Post(this, task_id_, pdata);
+bool Task::HandleMessage(Message *msg) {
+  if(msg->message_id == task_id_) {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
 }
 
 void Task::PostTask() {
@@ -62,30 +79,133 @@ void Task::PostTask() {
 }
 
 Message::Ptr Task::WaitTaskDone() {
-  Thread *current_thread = Thread::Current();
-  uint32 end_time = Time() + timeout_;
+  uint32 msEnd = TimeAfter(timeout_);
+  int cmsNext = timeout_;
   Message::Ptr msg(new Message());
   while(1) {
-    current_thread->Peek(msg.get(), end_time - Time());
+#if __has_feature(objc_arc)
+    @autoreleasepool
+#elif defined(OSX) || defined(IOS)
+    // see: http://developer.apple.com/library/mac/#documentation/Cocoa/Reference/Foundation/Classes/NSAutoreleasePool_Class/Reference/Reference.html
+    // Each thread is supposed to have an autorelease pool. Also for event loops
+    // like this, autorelease pool needs to be created and drained/released
+    // for each cycle.
+    ScopedAutoreleasePool pool;
+#endif
+    task_thread_->Get(msg.get(), cmsNext);
     if(msg->phandler == NULL) {
-      msg.reset(NULL);
-      break;
+      // msg.reset(NULL);
     } else if(msg->phandler != NULL && msg->message_id == task_id_) {
       break;
     } else {
-      current_thread->Dispatch(msg.get());
+      // Unhandle Error
+      LOG(LS_ERROR) << "Unhandle Message";
+      ASSERT(false);
+      // current_thread->Dispatch(msg.get());
     }
+    cmsNext = TimeUntil(msEnd);
+    if (cmsNext < 0)
+      break;
   }
   return msg;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 ConnectTask::ConnectTask(QueueLayer *queue_layer,
                          uint32 timeout,
                          SocketAddress &address)
   : Task(queue_layer, timeout),
-    message_data_(new ReqConnectData(address, REQ_CONNECT_SERVER)) {
+    req_connect_data_(new ReqConnectData(address)) {
+  set_message_data(req_connect_data_);
 }
 
 ConnectTask::~ConnectTask() {
+}
+
+//------------------------------------------------------------------------------
+DisconnectTask::DisconnectTask(QueueLayer *queue_layer,
+                               uint32 timeout,
+                               uint32 session_id)
+  : Task(queue_layer, timeout),
+    req_disconnect_data_(new ReqDisconnectData(session_id)) {
+  set_message_data(req_disconnect_data_);
+}
+
+bool DisconnectTask::HandleMessage(Message *msg) {
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
+  if(msg->message_id == task_id_
+      && (stanza->stanza_type() == RES_DISCONNECTED_EVENT_SUCCEED
+          || stanza->stanza_type() == RES_DISCONNECTED_EVENT_FAILURE)
+      && stanza->session_id() == req_disconnect_data_->session_id()) {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
+}
+
+DisconnectTask::~DisconnectTask() {
+}
+
+//------------------------------------------------------------------------------
+ReqTask::ReqTask(QueueLayer *queue_layer,
+                 uint32 timeout,
+                 uint32 session_id,
+                 const Json::Value &req_json)
+  : Task(queue_layer, timeout),
+    req_data_(new RequestData(session_id, req_json)) {
+  set_message_data(req_data_);
+  req_cmd_ = req_json[JSON_REQ_CMD].asString();
+  ASSERT(!req_cmd_.empty());
+}
+ReqTask::~ReqTask() {
+}
+
+bool ReqTask::HandleMessage(Message *msg) {
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
+  if(msg->message_id == 0
+      && stanza->session_id() == req_data_->session_id()
+      && stanza->stanza_type() == RES_STANZA_EVENT) {
+    return HandleResponse(msg);
+  }
+  if(msg->message_id == task_id_
+      && stanza->session_id() == req_data_->session_id()) {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
+}
+
+bool ReqTask::HandleResponse(Message *msg) {
+  ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
+  const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
+  if(res_cmd == req_cmd_) {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
+ReqPushTask::ReqPushTask(QueueLayer *queue_layer,
+                         uint32 timeout,
+                         uint32 session_id,
+                         const Json::Value &req_json)
+  : Task(queue_layer, timeout),
+    req_data_(new RequestData(session_id, req_json, true)) {
+  set_message_data(req_data_);
+}
+ReqPushTask::~ReqPushTask() {
+}
+
+bool ReqPushTask::HandleMessage(Message *msg) {
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
+  if(msg->message_id == task_id_
+      && stanza->session_id() == req_data_->session_id()) {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
 }
 }

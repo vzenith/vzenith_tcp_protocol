@@ -28,6 +28,7 @@
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/internalmessage.h"
 #include "vzsdk/task.h"
+#include "base/logging.h"
 
 namespace vzsdk {
 
@@ -38,6 +39,7 @@ class ReqTaskStanza : public Stanza {
       task_(task) {
   }
   virtual ~ReqTaskStanza() {
+    // LOG(LS_INFO) << "Destory ReqTaskStanza ... ...";
   }
   Task::Ptr task() {
     return task_;
@@ -45,6 +47,24 @@ class ReqTaskStanza : public Stanza {
  private:
   Task::Ptr task_;
 };
+
+class RemoveTaskStanza : public Stanza {
+ public:
+  RemoveTaskStanza(Task::Ptr task)
+    : Stanza(REQ_REMOVE_TASK_EVENT),
+      task_(task) {
+  }
+  virtual ~RemoveTaskStanza() {
+    // LOG(LS_INFO) << "Destory ReqTaskStanza ... ...";
+  }
+  Task::Ptr task() {
+    return task_;
+  }
+ private:
+  Task::Ptr task_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
 
 QueueLayer::QueueLayer() {
 }
@@ -64,6 +84,47 @@ void QueueLayer::OnMessage(Message *msg) {
 }
 
 void QueueLayer::OnReqMessage(Message *msg) {
+  Stanza *stanza_task = static_cast<Stanza *>(msg->pdata.get());
+  switch (stanza_task->stanza_type()) {
+  case REQ_CONNECT_SERVER:
+  case REQ_SEND_REQUESTION:
+  case REQ_DISCONNECT_SERVER:
+    OnTranslateToAsyncLayer(msg);
+    break;
+  case REQ_REMOVE_TASK_EVENT:
+    OnRemoveTaskMessage(msg);
+    break;
+  case REQ_ADD_PUSH_TASK:
+    OnAddPushTaskMessage(msg);
+    break;
+  default:
+    break;
+  }
+}
+
+void QueueLayer::OnResMessage(Message *msg) {
+  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
+  switch (stanza->stanza_type()) {
+  case RES_DISCONNECTED_EVENT_SUCCEED:
+  case RES_DISCONNECTED_EVENT_FAILURE:
+  case RES_CONNECTED_EVENT:
+  case RES_STANZA_EVENT:
+  case RES_PUSH_SUCCEED:
+    OntranslateToSyncLayer(msg);
+    break;
+  default:
+    break;
+  }
+}
+
+void QueueLayer::OnRemoveTaskMessage(Message *msg) {
+  RemoveTaskStanza *stanza_task =
+    static_cast<RemoveTaskStanza *>(msg->pdata.get());
+  Task::Ptr task = stanza_task->task();
+  RemoveTask(task->task_id());
+}
+
+void QueueLayer::OnTranslateToAsyncLayer(Message *msg) {
   ReqTaskStanza *stanza_task = static_cast<ReqTaskStanza *>(msg->pdata.get());
   Task::Ptr task = stanza_task->task();
   bool add_res = AddTask(task);
@@ -71,24 +132,20 @@ void QueueLayer::OnReqMessage(Message *msg) {
   session_manager_->Post(task->task_id(), task->message_data());
 }
 
-void QueueLayer::OnResMessage(Message *msg) {
-  Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
-  switch (stanza->stanza_type()) {
-  case RES_DISCONNECTED_EVENT:
-  case RES_CONNECTED_EVENT:
-    OnConnectedEvent(msg->message_id, msg);
-    break;
-  case RES_STANZA_EVENT:
-    break;
-  default:
-    break;
-  }
+void QueueLayer::OnAddPushTaskMessage(Message *msg) {
+  ReqTaskStanza *stanza_task = static_cast<ReqTaskStanza *>(msg->pdata.get());
+  push_task_ = stanza_task->task();
 }
 
-void QueueLayer::OnConnectedEvent(uint32 task_id, Message *msg) {
-  Task::Ptr task = FindTask(task_id);
-  if(task != NULL) {
-    task->HandleMessage(msg->pdata);
+void QueueLayer::OntranslateToSyncLayer(Message *msg) {
+  for(std::map<uint32, Task::Ptr>::iterator iter = tasks_.begin();
+      iter != tasks_.end(); iter++) {
+    if(iter->second->HandleMessage(msg)) {
+      return;
+    }
+  }
+  if(push_task_) {
+    push_task_->HandleMessage(msg);
   }
 }
 
@@ -98,6 +155,11 @@ void QueueLayer::Post(uint32 id, MessageData::Ptr pdata) {
 
 void QueueLayer::Post(Task::Ptr task) {
   MessageData::Ptr stanza_task(new ReqTaskStanza(task));
+  queue_thread_->Post(this, task->task_id(), stanza_task);
+}
+
+void QueueLayer::AsyncRemoveTask(Task::Ptr task) {
+  MessageData::Ptr stanza_task(new RemoveTaskStanza(task));
   queue_thread_->Post(this, task->task_id(), stanza_task);
 }
 

@@ -121,8 +121,8 @@ bool LogMessage::is_diagnostic_mode_ = false;
 
 LogMessage::LogMessage(const char* file, int line, LoggingSeverity sev,
                        LogErrorContext err_ctx, int err, const char* module)
-    : severity_(sev),
-      warn_slow_logs_delay_(WARN_SLOW_LOGS_DELAY) {
+  : severity_(sev),
+    warn_slow_logs_delay_(WARN_SLOW_LOGS_DELAY) {
   // Android's logging facility keeps track of timestamp and thread.
 #ifndef ANDROID
   if (timestamp_) {
@@ -130,7 +130,8 @@ LogMessage::LogMessage(const char* file, int line, LoggingSeverity sev,
     // Also ensure WallClockStartTime is initialized, so that it matches
     // LogStartTime.
     WallClockStartTime();
-    print_stream_ << "[" << std::setfill('0') << std::setw(3) << (time / 1000)
+    print_stream_ << Describe(sev)
+                  << "[" << std::setfill('0') << std::setw(3) << (time / 1000)
                   << ":" << std::setw(3) << (time % 1000) << std::setfill(' ')
                   << "] ";
   }
@@ -144,7 +145,7 @@ LogMessage::LogMessage(const char* file, int line, LoggingSeverity sev,
 #endif  // !ANDROID
 
   if (severity_ >= ctx_sev_) {
-    print_stream_ << Describe(sev) << "(" << DescribeFile(file)
+    print_stream_ << "(" << DescribeFile(file)
                   << ":" << line << "): ";
   }
 
@@ -152,40 +153,40 @@ LogMessage::LogMessage(const char* file, int line, LoggingSeverity sev,
     std::ostringstream tmp;
     tmp << "[0x" << std::setfill('0') << std::hex << std::setw(8) << err << "]";
     switch (err_ctx) {
-      case ERRCTX_ERRNO:
-        tmp << " " << strerror(err);
-        break;
+    case ERRCTX_ERRNO:
+      tmp << " " << strerror(err);
+      break;
 #if WIN32
-      case ERRCTX_HRESULT: {
-        char msgbuf[256];
-        DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM;
-        HMODULE hmod = GetModuleHandleA(module);
-        if (hmod)
-          flags |= FORMAT_MESSAGE_FROM_HMODULE;
-        if (DWORD len = FormatMessageA(
-            flags, hmod, err,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            msgbuf, sizeof(msgbuf) / sizeof(msgbuf[0]), NULL)) {
-          while ((len > 0) &&
-              isspace(static_cast<unsigned char>(msgbuf[len-1]))) {
-            msgbuf[--len] = 0;
-          }
-          tmp << " " << msgbuf;
+    case ERRCTX_HRESULT: {
+      char msgbuf[256];
+      DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM;
+      HMODULE hmod = GetModuleHandleA(module);
+      if (hmod)
+        flags |= FORMAT_MESSAGE_FROM_HMODULE;
+      if (DWORD len = FormatMessageA(
+                        flags, hmod, err,
+                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                        msgbuf, sizeof(msgbuf) / sizeof(msgbuf[0]), NULL)) {
+        while ((len > 0) &&
+               isspace(static_cast<unsigned char>(msgbuf[len-1]))) {
+          msgbuf[--len] = 0;
         }
-        break;
+        tmp << " " << msgbuf;
       }
+      break;
+    }
 #endif  // WIN32
 #if OSX
-      case ERRCTX_OSSTATUS: {
-        tmp << " " << nonnull(GetMacOSStatusErrorString(err), "Unknown error");
-        if (const char* desc = GetMacOSStatusCommentString(err)) {
-          tmp << ": " << desc;
-        }
-        break;
+    case ERRCTX_OSSTATUS: {
+      tmp << " " << nonnull(GetMacOSStatusErrorString(err), "Unknown error");
+      if (const char* desc = GetMacOSStatusCommentString(err)) {
+        tmp << ": " << desc;
       }
+      break;
+    }
 #endif  // OSX
-      default:
-        break;
+    default:
+      break;
     }
     extra_ = tmp.str();
   }
@@ -212,7 +213,7 @@ LogMessage::~LogMessage() {
   uint32 delay = TimeSince(before);
   if (delay >= warn_slow_logs_delay_) {
     LogMessage slow_log_warning =
-        vzsdk::LogMessage(__FILE__, __LINE__, LS_WARNING);
+      vzsdk::LogMessage(__FILE__, __LINE__, LS_WARNING);
     // If our warning is slow, we don't want to warn about it, because
     // that would lead to inifinite recursion.  So, give a really big
     // number for the delay threshold.
@@ -308,7 +309,7 @@ void LogMessage::ConfigureLogging(const char* params, const char* filename) {
     } else if (tokens[i] == "thread") {
       LogThreads();
 
-    // Logging levels
+      // Logging levels
     } else if (tokens[i] == "sensitive") {
       current_level = LS_SENSITIVE;
     } else if (tokens[i] == "verbose") {
@@ -322,7 +323,7 @@ void LogMessage::ConfigureLogging(const char* params, const char* filename) {
     } else if (tokens[i] == "none") {
       current_level = NO_LOGGING;
 
-    // Logging targets
+      // Logging targets
     } else if (tokens[i] == "file") {
       file_level = current_level;
     } else if (tokens[i] == "debug") {
@@ -341,7 +342,7 @@ void LogMessage::ConfigureLogging(const char* params, const char* filename) {
     if (HINSTANCE kernel32 = ::LoadLibrary("kernel32.dll")) {
       // AttachConsole is defined on WinXP+.
       if (PFN_AttachConsole attach_console = reinterpret_cast<PFN_AttachConsole>
-            (::GetProcAddress(kernel32, "AttachConsole"))) {
+                                             (::GetProcAddress(kernel32, "AttachConsole"))) {
         success = (FALSE != attach_console(ATTACH_PARENT_PROCESS));
       }
       ::FreeLibrary(kernel32);
@@ -392,12 +393,18 @@ void LogMessage::UpdateMinLogSeverity() {
 
 const char* LogMessage::Describe(LoggingSeverity sev) {
   switch (sev) {
-  case LS_SENSITIVE: return "Sensitive";
-  case LS_VERBOSE:   return "Verbose";
-  case LS_INFO:      return "Info";
-  case LS_WARNING:   return "Warning";
-  case LS_ERROR:     return "Error";
-  default:           return "<unknown>";
+  case LS_SENSITIVE:
+    return "S";
+  case LS_VERBOSE:
+    return "V";
+  case LS_INFO:
+    return "I";
+  case LS_WARNING:
+    return "W";
+  case LS_ERROR:
+    return "E";
+  default:
+    return "U";
   }
 }
 
@@ -418,13 +425,13 @@ void LogMessage::OutputToDebug(const std::string& str,
   // So in opt builds, don't log to stderr unless the user specifically sets
   // a preference to do so.
   CFStringRef key = CFStringCreateWithCString(kCFAllocatorDefault,
-                                              "logToStdErr",
-                                              kCFStringEncodingUTF8);
+                    "logToStdErr",
+                    kCFStringEncodingUTF8);
   CFStringRef domain = CFBundleGetIdentifier(CFBundleGetMainBundle());
   if (key != NULL && domain != NULL) {
     Boolean exists_and_is_valid;
     Boolean should_log =
-        CFPreferencesGetAppBooleanValue(key, domain, &exists_and_is_valid);
+      CFPreferencesGetAppBooleanValue(key, domain, &exists_and_is_valid);
     // If the key doesn't exist or is invalid or is false, we will not log to
     // stderr.
     log_to_stderr = exists_and_is_valid && should_log;
@@ -454,27 +461,27 @@ void LogMessage::OutputToDebug(const std::string& str,
   // from the shell.
   int prio;
   switch (severity) {
-    case LS_SENSITIVE:
-      __android_log_write(ANDROID_LOG_INFO, kLibjingle, "SENSITIVE");
-      if (log_to_stderr) {
-        fprintf(stderr, "SENSITIVE");
-        fflush(stderr);
-      }
-      return;
-    case LS_VERBOSE:
-      prio = ANDROID_LOG_VERBOSE;
-      break;
-    case LS_INFO:
-      prio = ANDROID_LOG_INFO;
-      break;
-    case LS_WARNING:
-      prio = ANDROID_LOG_WARN;
-      break;
-    case LS_ERROR:
-      prio = ANDROID_LOG_ERROR;
-      break;
-    default:
-      prio = ANDROID_LOG_UNKNOWN;
+  case LS_SENSITIVE:
+    __android_log_write(ANDROID_LOG_INFO, kLibjingle, "SENSITIVE");
+    if (log_to_stderr) {
+      fprintf(stderr, "SENSITIVE");
+      fflush(stderr);
+    }
+    return;
+  case LS_VERBOSE:
+    prio = ANDROID_LOG_VERBOSE;
+    break;
+  case LS_INFO:
+    prio = ANDROID_LOG_INFO;
+    break;
+  case LS_WARNING:
+    prio = ANDROID_LOG_WARN;
+    break;
+  case LS_ERROR:
+    prio = ANDROID_LOG_ERROR;
+    break;
+  default:
+    prio = ANDROID_LOG_UNKNOWN;
   }
 
   int size = str.size();
@@ -564,8 +571,8 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
   while (udata < end) {
     const unsigned char* line = udata;
     const unsigned char* end_of_line = strchrn<unsigned char>(udata,
-                                                              end - udata,
-                                                              '\n');
+                                       end - udata,
+                                       '\n');
     if (!end_of_line) {
       udata = end_of_line = end;
     } else {
@@ -605,7 +612,7 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
     // characters.
     if (consecutive_unprintable) {
       LOG_V(level) << label << direction << "## " << consecutive_unprintable
-                  << " consecutive unprintable ##";
+                   << " consecutive unprintable ##";
       consecutive_unprintable = 0;
     }
     // Strip off trailing whitespace.

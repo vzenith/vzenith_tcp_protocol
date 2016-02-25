@@ -52,11 +52,19 @@ class Buffer {
     Construct(buf.data(), buf.length(), buf.length());
   }
 
-  const char* data() const { return data_.get(); }
-  char* data() { return data_.get(); }
+  const char* data() const {
+    return data_.get();
+  }
+  char* data() {
+    return data_.get();
+  }
   // TODO: should this be size(), like STL?
-  size_t length() const { return length_; }
-  size_t capacity() const { return capacity_; }
+  size_t length() const {
+    return length_;
+  }
+  size_t capacity() const {
+    return capacity_;
+  }
 
   Buffer& operator=(const Buffer& buf) {
     if (&buf != this) {
@@ -77,16 +85,19 @@ class Buffer {
     SetLength(length);
     memcpy(data_.get(), data, length);
   }
+
   void AppendData(const void* data, size_t length) {
     ASSERT(data != NULL || length == 0);
     size_t old_length = length_;
     SetLength(length_ + length);
     memcpy(data_.get() + old_length, data, length);
   }
+
   void SetLength(size_t length) {
     SetCapacity(length);
     length_ = length;
   }
+
   void SetCapacity(size_t capacity) {
     if (capacity > capacity_) {
       vzsdk::scoped_array<char> data(new char[capacity]);

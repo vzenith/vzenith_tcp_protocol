@@ -56,6 +56,7 @@ class SessionManager : public noncopyable,
 
   bool AddSession(Session::Ptr session);
   bool RemoveSession(uint32 session_id);
+  Session::Ptr FindSession(uint32 session_id);
 
   void OnConnectMessage(Message *msg);
   void OnDisconnectMessage(Message *msg);
@@ -70,6 +71,8 @@ class SessionManager : public noncopyable,
   void OnSessionCloseEvent(Session::Ptr session,
                            int code,
                            uint32 connect_id);
+private:
+  const char *FindEndString(const char *data, uint32 data_size);
  private:
   scoped_ptr<Thread> async_thread_;
   std::map<uint32, Session::Ptr> async_sessions_;
