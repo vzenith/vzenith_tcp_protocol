@@ -55,8 +55,8 @@ ELSE()
 		${PROJECT_SOURCE_DIR}/lib/unix
 		)
 	SET(TCP_SDK_LINK_LIB
-		libjsoncpp.a
 		libvztcpsdk.a
+		libjsoncpp.a
 		-lpthread
 		-lrt
 		)
