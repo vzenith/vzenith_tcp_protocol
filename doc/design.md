@@ -1,5 +1,7 @@
 # TCP SDK设计
 
+vzenith tcp protocol 的核心代码移植来自于google的代码，
+
 ## Session
 
 只运行在`async_thread`单线程中

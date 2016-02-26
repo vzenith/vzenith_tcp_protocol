@@ -238,6 +238,7 @@ MESSAGE(STATUS "Step 4 : Add code source")
 MESSAGE(STATUS "Step 5 : Add executable or library target")
 #ADD_executable(${BUILD_PROJECT_NAME} ${SRC_LIST})
 ADD_LIBRARY(${BUILD_PROJECT_NAME} STATIC ${SRC_LIST})
+ADD_LIBRARY(vztcpsdk_dynamic SHARED ${SRC_LIST})
 set_property(TARGET ${BUILD_PROJECT_NAME} PROPERTY FOLDER ${PROJECT_SET_NAME_LIB})
 #########################################################################
 #Step 6 : link with other library
