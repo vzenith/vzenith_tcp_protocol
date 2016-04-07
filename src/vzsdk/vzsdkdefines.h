@@ -27,9 +27,7 @@
 #ifndef SRC_VZSDK_VZSDKDEFINES_H_
 #define SRC_VZSDK_VZSDKDEFINES_H_
 
-#include "base\basictypes.h"
 #include "base\shared_ptr.h"
-#include "boost\smart_ptr\scoped_ptr.hpp"
 
 namespace vzsdk {
 
