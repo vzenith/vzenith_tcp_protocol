@@ -31,32 +31,74 @@
 #include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/task.h"
+#include "vzsdk/vzlprtcpsdk.h"
 
 namespace vzsdk {
 
-class PushHandle : public boost::enable_shared_from_this<PushHandle>,
-  public noncopyable {
- public:
-  PushHandle(const std::string &cmd_key);
-  virtual ~PushHandle();
-  typedef boost::shared_ptr<PushHandle> Ptr;
-  virtual bool HandleMessageData(ResponseData *response) = 0;
-  const std::string &cmd_key() {
-    return cmd_key_;
-  }
- private:
-  std::string cmd_key_;
+class PushHandle : public noncopyable
+    , public boost::enable_shared_from_this < PushHandle > {
+
+  public:
+    PushHandle(const std::string &cmd_key);
+    virtual ~PushHandle();
+    typedef boost::shared_ptr<PushHandle> Ptr;
+    virtual bool HandleMessageData(ResponseData *response) = 0;
+    const std::string &cmd_key() {
+        return cmd_key_;
+    }
+
+  private:
+    std::string cmd_key_;
 };
 
 //------------------------------------------------------------------------------
 class IvsPushHandle : public PushHandle {
-public:
-  IvsPushHandle(const std::string &cmd_key);
-  virtual ~IvsPushHandle();
-  virtual bool HandleMessageData(ResponseData *response);
-private:
+  public:
+    IvsPushHandle(const std::string &cmd_key);
+    virtual ~IvsPushHandle();
+
+    virtual bool HandleMessageData(ResponseData *response);
+
+    void SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback, void* result_userdata);
+    void SetSessionID(int session_id);
+
+  private:
+    VZ_LPRC_RESULT_TYPE GetResultTypeFromTrigBits(unsigned uBitsTrigType);
+    VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback_;
+    void* result_userdata_;
+
+    int session_id_;
 };
 
+//------------------------------------------------------------------------------
+class SerialPushHandle : public PushHandle {
+  public:
+    SerialPushHandle(const std::string &cmd_key);
+    virtual ~SerialPushHandle();
+    virtual bool HandleMessageData(ResponseData *response);
+    void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
+
+  private:
+    VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func_;
+    void *user_data_;
+};
+
+//------------------------------------------------------------------------------
+class ChangeConnPushHandle : public PushHandle {
+public:
+  ChangeConnPushHandle(const std::string &cmd_key);
+  virtual ~ChangeConnPushHandle();
+  virtual bool HandleMessageData(ResponseData *response);
+
+  void SetConnCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void* user_data);
+  void SetSessionID(int session_id);
+
+protected:
+  int session_id_;
+  Socket::ConnState conn_state_;
+  VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+  void* user_data_;
+};
 }
 
 #endif // SRC_VZSDK_VZSDKPUSHMANAGER_H_

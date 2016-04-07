@@ -115,6 +115,7 @@ class Runnable {
   DISALLOW_COPY_AND_ASSIGN(Runnable);
 };
 
+typedef boost::shared_ptr<Thread> ThreadPtr;
 class Thread : public MessageQueue {
  public:
   Thread(SocketServer* ss = NULL);

@@ -40,43 +40,49 @@ namespace vzsdk {
 class QueueLayer;
 
 class SessionManager : public noncopyable,
-  public sigslot::has_slots<>,
-  public MessageHandler  {
- public:
-  SessionManager(QueueLayer *queue_layer);
-  virtual ~SessionManager();
-  virtual void OnMessage(Message *msg);
-  void Post(uint32 task_id, MessageData::Ptr pdata);
-  bool Start();
-  bool Stop();
- private:
-  bool InitAsyncThread();
-  void BindSessionSignal(Session::Ptr session);
-  void UnbindSessionSignal(Session::Ptr session);
+    public sigslot::has_slots<>,
+    public MessageHandler,
+    public boost::enable_shared_from_this<SessionManager> {
+  public:
+    typedef boost::shared_ptr<SessionManager> Ptr;
+    SessionManager(QueueLayer *queue_layer);
+    virtual ~SessionManager();
+    virtual void OnMessage(Message *msg);
 
-  bool AddSession(Session::Ptr session);
-  bool RemoveSession(uint32 session_id);
-  Session::Ptr FindSession(uint32 session_id);
+    void Post(uint32 task_id, MessageData::Ptr pdata);
+    bool Start();
+    bool Stop();
 
-  void OnConnectMessage(Message *msg);
-  void OnDisconnectMessage(Message *msg);
-  void OnRequestMessage(Message *msg);
+    Session::Ptr FindSession(uint32 session_id);
 
-  void OnSessionPacketEvent(Session::Ptr session,
-                            const char *data,
-                            uint32 data_size,
-                            uint8 packet_type);
-  void OnSessionConnectedEvent(Session::Ptr session,
-                               uint32 connect_id);
-  void OnSessionCloseEvent(Session::Ptr session,
-                           int code,
-                           uint32 connect_id);
-private:
-  const char *FindEndString(const char *data, uint32 data_size);
- private:
-  scoped_ptr<Thread> async_thread_;
-  std::map<uint32, Session::Ptr> async_sessions_;
-  QueueLayer *queue_layer_;
+  private:
+    bool InitAsyncThread();
+    void BindSessionSignal(Session::Ptr session);
+    void UnbindSessionSignal(Session::Ptr session);
+
+    bool AddSession(Session::Ptr session);
+    bool RemoveSession(uint32 session_id);
+
+    void OnReconnectMessage(Message* msg);
+    void OnConnectMessage(Message *msg);
+    void OnDisconnectMessage(Message *msg);
+    void OnRequestMessage(Message *msg);
+
+    void OnSessionPacketEvent(Session::Ptr session,
+                              const char *data,
+                              uint32 data_size,
+                              uint8 packet_type);
+    void OnSessionConnectedEvent(Session::Ptr session,
+                                 uint32 connect_id);
+    void OnSessionCloseEvent(Session::Ptr session,
+                             int code,
+                             uint32 connect_id);
+  private:
+    const char *FindEndString(const char *data, uint32 data_size);
+  private:
+    scoped_ptr<Thread> async_thread_;
+    std::map<uint32, Session::Ptr> async_sessions_;
+    QueueLayer *queue_layer_;
 };
 
 }

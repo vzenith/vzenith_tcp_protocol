@@ -46,7 +46,7 @@ class Session : public noncopyable,
   public boost::enable_shared_from_this<Session>,
   public MessageHandler {
  public:
-  Session(Thread* async_thread);
+   Session(Thread* async_thread, int _session_id = 0);
   virtual ~Session();
 
   typedef boost::shared_ptr<Session> Ptr;

@@ -24,48 +24,50 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef SRC_HSHA_TCPDEVICEMANAGE_H_
+#define SRC_HSHA_TCPDEVICEMANAGE_H_
 
-#include "vzsdk/internalmessage.h"
+#include <map>
+#include "vzsdk/vzsdkservice.h"
+
+using namespace vzsdk;
 
 namespace vzsdk {
-////////////////////////////////////////////////////////////////////////////////
-//------------------------------------------------------------------------------
-ReqConnectData::ReqConnectData(SocketAddress &address)
-    : address_(address),
-      Stanza(REQ_CONNECT_SERVER) {
+typedef std::map<int, VzsdkServicesPtr> VzsdkServicesMap;
+
+//多个设备管理
+class VzTcpDeviceManage {
+  public:
+    VzTcpDeviceManage();
+    ~VzTcpDeviceManage();
+    int CreateNewService(const std::string& ip
+                         , const int port
+                         , const std::string& user_name
+                         , const std::string& user_pwd);
+
+    const VzsdkServicesPtr GetService(int session_id);
+    const VzsdkServicesPtr GetService(const std::string& ip);
+
+    bool ExistService(int session_id);
+    bool CloseService(int session_id);
+
+    void SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                    , void *pUserData);
+
+    void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                    , void *pUserData);
+  protected:
+    bool RemoveService(int session_id);
+
+  private:
+    VzsdkServicesMap vzsdk_service_map_;
+
+    //针对所有设备
+    VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+    void* user_data_;
+};
 }
 
-ReqConnectData::ReqConnectData(const ReqConnectData& _req_connect_data)
-    : Stanza(_req_connect_data)
-    , address_(_req_connect_data.address_) {
-}
+#endif
 
-//------------------------------------------------------------------------------
-ReqDisconnectData::ReqDisconnectData(uint32 session_id)
-    : Stanza(REQ_DISCONNECT_SERVER, session_id) {
-}
 
-//------------------------------------------------------------------------------
-RequestData::RequestData(uint32 session_id,
-                         const Json::Value &req_json,
-                         bool is_push)
-    : Stanza(REQ_SEND_REQUESTION, session_id),
-      req_json_(req_json),
-      is_push_(is_push) {
-}
-
-//------------------------------------------------------------------------------
-ResponseData::ResponseData(uint32 session_id,
-                           const Json::Value &res_json,
-                           const std::string &res_data)
-    : Stanza(RES_STANZA_EVENT, session_id),
-      res_json_(res_json),
-      res_data_(res_data) {
-}
-
-Stanza::Stanza(const Stanza& _stanze) {
-    this->session_id_ = _stanze.session_id_;
-    this->stanza_type_ = _stanze.stanza_type_;
-}
-
-}

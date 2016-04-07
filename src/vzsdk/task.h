@@ -38,105 +38,137 @@ namespace vzsdk {
 class QueueLayer;
 
 class Task : public MessageHandler,
-  public boost::enable_shared_from_this<Task> {
- public:
-  typedef boost::shared_ptr<Task> Ptr;
-  Task(QueueLayer *queue_layer, uint32 timeout, Thread *task_thread = NULL);
-  virtual ~Task();
-  virtual void OnMessage(Message *msg);
-  virtual MessageData::Ptr message_data() {
-    return message_data_;
-  }
-  virtual uint32 message_type() = 0;
-  virtual Message::Ptr SyncProcessTask();
-  Thread *task_thread() {
-    return task_thread_;
-  }
-  uint32 task_id() const {
-    return task_id_;
-  }
-  virtual bool HandleMessage(Message *msg);
- protected:
-  void set_message_data(MessageData *msg_data) {
-    message_data_.reset(msg_data);
-  }
- protected:
-  void PostTask();
-  Message::Ptr WaitTaskDone();
- protected:
-  static uint32 unequal_task_id_;
-  QueueLayer *queue_layer_;
-  uint32 timeout_;
-  Thread *task_thread_;
-  uint32 task_id_;
-  MessageData::Ptr message_data_;
+    public boost::enable_shared_from_this<Task> {
+  public:
+    typedef boost::shared_ptr<Task> Ptr;
+    Task(QueueLayer *queue_layer, uint32 timeout, Thread *task_thread = NULL);
+    virtual ~Task();
+    virtual void OnMessage(Message *msg);
+    virtual MessageData::Ptr message_data() {
+        return message_data_;
+    }
+    virtual uint32 message_type() = 0;
+    virtual Message::Ptr SyncProcessTask();
+    virtual void PostTask();
+
+    Thread *task_thread() {
+        return task_thread_;
+    }
+    uint32 task_id() const {
+        return task_id_;
+    }
+    virtual bool HandleMessage(Message *msg);
+  protected:
+    void set_message_data(MessageData *msg_data) {
+        message_data_.reset(msg_data);
+    }
+
+  protected:
+    Message::Ptr WaitTaskDone();
+  protected:
+    static uint32 unequal_task_id_;
+    QueueLayer *queue_layer_;
+    uint32 timeout_;
+    Thread *task_thread_;
+    uint32 task_id_;
+    MessageData::Ptr message_data_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 //------------------------------------------------------------------------------
 class ConnectTask : public Task {
- public:
-  ConnectTask(QueueLayer *queue_layer,
-              uint32 timeout,
-              SocketAddress &address);
-  virtual ~ConnectTask();
-  virtual uint32 message_type() {
-    return REQ_CONNECT_SERVER;
-  }
- private:
-  ReqConnectData *req_connect_data_;
+  public:
+    ConnectTask(QueueLayer *queue_layer,
+                uint32 timeout,
+                SocketAddress &address);
+    ConnectTask(QueueLayer *queue_layer
+                , uint32 timeout
+                , const ReqConnectData& _req_connect_data);
+    virtual ~ConnectTask();
+
+    virtual uint32 message_type() {
+        return REQ_CONNECT_SERVER;
+    }
+  private:
+    ReqConnectData *req_connect_data_;
+};
+
+class ReConnectTask : public Task {
+  public:
+    ReConnectTask(QueueLayer *queue_layer
+                  , uint32 timeout
+                  , const ReqConnectData& _req_connect_data);
+    virtual ~ReConnectTask();
+
+    virtual void OnMessage(Message *msg);
+    virtual uint32 message_type() {
+        return RES_RECONNECT_SERVER;
+    }
+  private:
+    ReqConnectData *req_reconnect_data_;
 };
 
 //------------------------------------------------------------------------------
 class DisconnectTask : public Task {
- public:
-  DisconnectTask(QueueLayer *queue_layer,
-                 uint32 timeout,
-                 uint32 session_id);
-  virtual ~DisconnectTask();
-  virtual uint32 message_type() {
-    return REQ_DISCONNECT_SERVER;
-  }
-  virtual bool HandleMessage(Message *msg);
- private:
-  ReqDisconnectData *req_disconnect_data_;
+  public:
+    DisconnectTask(QueueLayer *queue_layer,
+                   uint32 timeout,
+                   uint32 session_id);
+    virtual ~DisconnectTask();
+    virtual uint32 message_type() {
+        return REQ_DISCONNECT_SERVER;
+    }
+    virtual bool HandleMessage(Message *msg);
+  private:
+    ReqDisconnectData *req_disconnect_data_;
 };
 
 //------------------------------------------------------------------------------
 class ReqTask : public Task {
- public:
-  ReqTask(QueueLayer *queue_layer,
-          uint32 timeout,
-          uint32 session_id,
-          const Json::Value &req_json);
-  virtual ~ReqTask();
-  virtual uint32 message_type() {
-    return REQ_SEND_REQUESTION;
-  }
-  virtual bool HandleMessage(Message *msg);
- private:
-  bool HandleResponse(Message *msg);
-  RequestData *req_data_;
-  std::string req_cmd_;
+  public:
+    ReqTask(QueueLayer *queue_layer,
+            uint32 timeout,
+            uint32 session_id,
+            const Json::Value &req_json);
+    virtual ~ReqTask();
+    virtual uint32 message_type() {
+        return REQ_SEND_REQUESTION;
+    }
+    virtual bool HandleMessage(Message *msg);
+  protected:
+    virtual bool HandleResponse(Message *msg);
+    RequestData *req_data_;
+    std::string req_cmd_;
 };
 
 //------------------------------------------------------------------------------
 class ReqPushTask : public Task {
- public:
-  ReqPushTask(QueueLayer *queue_layer,
-          uint32 timeout,
-          uint32 session_id,
-          const Json::Value &req_json);
-  virtual ~ReqPushTask();
-  virtual uint32 message_type() {
-    return REQ_SEND_REQUESTION;
-  }
-  virtual bool HandleMessage(Message *msg);
- private:
-  RequestData *req_data_;
+  public:
+    ReqPushTask(QueueLayer *queue_layer,
+                uint32 timeout,
+                uint32 session_id,
+                const Json::Value &req_json);
+    virtual ~ReqPushTask();
+    virtual uint32 message_type() {
+        return REQ_SEND_REQUESTION;
+    }
+    virtual bool HandleMessage(Message *msg);
+  private:
+    RequestData *req_data_;
 };
 
 //------------------------------------------------------------------------------
+class ReqRecordTask : public ReqTask {
+  public:
+    ReqRecordTask(QueueLayer *queue_layer,
+                  uint32 timeout,
+                  uint32 session_id,
+                  const Json::Value &req_json);
+    virtual ~ReqRecordTask();
+  protected:
+    virtual bool HandleResponse(Message *msg);
+};
+
 }
 
 #endif // SRC_HSHA_TASK_H_

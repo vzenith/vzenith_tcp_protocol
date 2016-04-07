@@ -25,42 +25,64 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SRC_VZSDK_VZSDKPUSHMANAGER_H_
-#define SRC_VZSDK_VZSDKPUSHMANAGER_H_
+#ifndef SRC_HSHA_SYNC_LAYER_H_
+#define SRC_HSHA_SYNC_LAYER_H_
 
 #include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
-#include "vzsdk/task.h"
-#include "vzsdk/vzsdkpushhandle.h"
+#include "vzsdk/vzsdkpushmanager.h"
+#include "vzsdk/vzsdkdefines.h"
+#include "vzsdk/vzclientsdk_lpdefine.h"
 
 namespace vzsdk {
-class PushManagerTask : public Task {
+class VzsdkService : public noncopyable {
   public:
-    PushManagerTask(QueueLayer *queue_layer, Thread *push_thread);
-    virtual ~PushManagerTask();
-    virtual uint32 message_type() {
-        return REQ_ADD_PUSH_TASK;
-    }
-    virtual void OnMessage(Message *msg);
-    virtual Message::Ptr SyncProcessTask();
-    virtual bool HandleMessage(Message *msg);
+    VzsdkService();
+    virtual ~VzsdkService();
+
+    int GetSessionID();
+
     void AddPushHandle(PushHandle::Ptr handle);
     void RemovePushHandle(PushHandle::Ptr handle);
+
+    QueueLayerPtr GetQueueLayer();
+
+    //功能模块
+    VzConnectDevPtr GetConnectDev();      //设备连接
+    VzRecognitionPtr GetRecongintion();   //车牌识别
+    VzMaintenDevPtr GetMaintenDev();      //设备维护
+    VzWlistDevPtr GetWlistDev();          //白名单
+    VzSerialDevPtr GetSerialDev();        //串口
+    VzIODevPtr GetIODev();                //IO
+
+    bool Start(); //初始化
+    bool Stop();  //停止服务
+
+    void SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                          , void *pUserData);
+
+    void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                          , void *pUserData);
+
+  protected:
+    void initModule();
+
   private:
-    bool HandleResponse(Message *msg);
-    bool HandleChangeConn(Message *msg);
-    void ProcessPushEvent(Message *msg);
-  private:
-    static const uint32 PUSH_EVENT_STANZA = 1;
-    static const uint32 ADD_PUSH_HANDLE = 2;
-    static const uint32 REMOVE_PUSH_HANDLE = 3;
-    bool is_register_;
-    typedef std::set<std::string> PushHandleKeys;
-    typedef std::vector<PushHandle::Ptr> PushHandles;
-    PushHandleKeys push_handle_keys_;
-    PushHandles push_handles_;
-    mutable CriticalSection crit_;
+    QueueLayerPtr queue_layer_;
+    PushManagerTask *push_manager_task_;
+    ThreadPtr push_thread_;
+
+    VzConnectDevPtr connect_dev_;
+    VzRecognitionPtr recongition_;
+    VzMaintenDevPtr maintenDev_;
+
+    VzWlistDevPtr whist_dev_;
+    VzSerialDevPtr serial_dev_;
+    VzIODevPtr io_dev_;
+
+    VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+    void* user_data_;
 };
 }
 
-#endif // SRC_VZSDK_VZSDKPUSHMANAGER_H_
+#endif // SRC_HSHA_SYNC_LAYER_H_
