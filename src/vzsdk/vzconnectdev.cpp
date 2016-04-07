@@ -24,7 +24,7 @@
 * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "vzsdk/VzConnectDev.h"
+#include "vzsdk/vzconnectdev.h"
 #include "vzsdk/vzsdkdefines.h"
 #include "base/logging.h"
 #include "vzsdk/vzsdkpushhandle.h"

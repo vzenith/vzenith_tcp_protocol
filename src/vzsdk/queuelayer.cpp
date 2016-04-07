@@ -29,7 +29,7 @@
 #include "vzsdk/internalmessage.h"
 #include "vzsdk/task.h"
 #include "base/logging.h"
-#include "vzsdkdefines.h"
+#include "vzsdk/vzsdkdefines.h"
 
 namespace vzsdk {
 

@@ -24,7 +24,7 @@
 * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "vzsdk/VzRecognition.h"
+#include "vzsdk/vzrecognition.h"
 #include "vzsdk/vzsdkdefines.h"
 #include "vzsdk/commandanalysis.h"
 #include "base/logging.h"

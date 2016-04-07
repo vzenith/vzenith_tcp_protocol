@@ -24,8 +24,8 @@
 * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include "vzsdk/VzTcpDeviceManage.h"
-#include "vzsdk/VzConnectDev.h"
+#include "vzsdk/vztcpdevicemanage.h"
+#include "vzsdk/vzconnectdev.h"
 
 const int _c_success = 0;
 const int _c_failed = -1;
