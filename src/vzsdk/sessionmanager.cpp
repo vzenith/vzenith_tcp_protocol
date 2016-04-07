@@ -43,6 +43,9 @@ SessionManager::~SessionManager() {
 void SessionManager::OnMessage(Message *msg) {
   Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
   switch (stanza->stanza_type()) {
+  case  vzsdk::RES_RECONNECT_SERVER:
+    OnReconnectMessage(msg);
+    break;
   case vzsdk::REQ_CONNECT_SERVER:
     OnConnectMessage(msg);
     break;
@@ -233,6 +236,18 @@ const char *SessionManager::FindEndString(const char *data, uint32 data_size) {
     }
   }
   return data + data_size;
+}
+
+void SessionManager::OnReconnectMessage(Message* msg)
+{
+  OnDisconnectMessage(msg);
+  ReqConnectData *req_connect_data =
+    static_cast<ReqConnectData *>(msg->pdata.get());
+  Session::Ptr session(new Session(async_thread_.get(), req_connect_data->session_id()));
+  
+  bool add_res = AddSession(session);
+  ASSERT(add_res);
+  session->Start(req_connect_data->address(), msg->message_id);
 }
 
 }

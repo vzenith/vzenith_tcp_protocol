@@ -29,6 +29,7 @@
 #include "vzsdk/internalmessage.h"
 #include "vzsdk/task.h"
 #include "base/logging.h"
+#include "vzsdkdefines.h"
 
 namespace vzsdk {
 
@@ -111,6 +112,9 @@ void QueueLayer::OnResMessage(Message *msg) {
   case RES_STANZA_EVENT:
   case RES_PUSH_SUCCEED:
     OntranslateToSyncLayer(msg);
+    break;
+  case RES_RECONNECT_SERVER:
+    ReConnect(msg);
     break;
   default:
     break;
@@ -201,6 +205,34 @@ Task::Ptr QueueLayer::FindTask(uint32 task_id) {
     return Task::Ptr();
   }
   return iter->second;
+}
+
+void QueueLayer::ReConnect(Message* msg)
+{
+  ReqConnectData* _stanza = static_cast<ReqConnectData*>(msg->pdata.get());
+  
+  if (_stanza)
+  {
+    vzsdk::Session::Ptr _session_ptr = session_manager_->FindSession(_stanza->session_id());
+    if (!_session_ptr || (_session_ptr && _session_ptr->GetState() == Socket::CS_CLOSED))
+    {      
+      if (_session_ptr)
+        _session_ptr->Stop();
+      queue_thread_->Post(session_manager_.get(), REQ_CONNECT_SERVER, msg->pdata);
+      //Post(REQ_CONNECT_SERVER, msg->pdata);
+    }
+    
+//     Task::Ptr connect_task(new ReConnectTask(this,
+//       vzsdk::FOREVER_TIMEOUT,
+//       *_stanza));
+    //Message::Ptr msg = connect_task->SyncProcessTask();
+    PostDelayed(1000, this, RES_RECONNECT_SERVER, msg->pdata);
+ }
+}
+
+void QueueLayer::PostDelayed(int cmsDelay, MessageHandler *phandler, uint32 id /*= 0*/, MessageData::Ptr pdata /*= MessageData::Ptr()*/)
+{
+  queue_thread_->PostDelayed(cmsDelay, phandler, id, pdata);
 }
 
 }

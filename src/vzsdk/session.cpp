@@ -32,10 +32,13 @@ namespace vzsdk {
 
 uint32 Session::unequal_session_id_ = 0X01;
 
-Session::Session(Thread* async_thread)
+Session::Session(Thread* async_thread, int _session_id)
   : async_thread_(async_thread),
     connect_id_(0) {
-  session_id_ = ++ unequal_session_id_;
+  if (_session_id == 0)
+    session_id_ = ++unequal_session_id_;
+  else
+    session_id_ = _session_id;
 }
 
 Session::~Session() {

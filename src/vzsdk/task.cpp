@@ -120,6 +120,14 @@ ConnectTask::ConnectTask(QueueLayer *queue_layer,
   set_message_data(req_connect_data_);
 }
 
+ConnectTask::ConnectTask(QueueLayer *queue_layer
+                          , uint32 timeout
+                          , const ReqConnectData& _req_connect_data)
+                          : Task(queue_layer, timeout)
+                          , req_connect_data_(new ReqConnectData(_req_connect_data)){
+
+}
+
 ConnectTask::~ConnectTask() {
 }
 
@@ -208,4 +216,47 @@ bool ReqPushTask::HandleMessage(Message *msg) {
   }
   return false;
 }
+
+ReConnectTask::ReConnectTask(QueueLayer *queue_layer
+                                  , uint32 timeout
+                                  , const ReqConnectData& _req_connect_data)
+  : Task(queue_layer, timeout)
+  , req_reconnect_data_(new ReqConnectData(_req_connect_data)){
+  set_message_data(req_reconnect_data_);
+}
+
+ReConnectTask::~ReConnectTask(){
+}
+
+void ReConnectTask::OnMessage(Message *msg)
+{
+
+}
+
+ReqRecordTask::ReqRecordTask(QueueLayer *queue_layer
+                                    , uint32 timeout
+                                    , uint32 session_id
+                                    , const Json::Value &req_json)
+                                    : ReqTask(queue_layer, timeout, session_id, req_json)
+{
+
+}
+
+ReqRecordTask::~ReqRecordTask()
+{
+
+}
+
+bool ReqRecordTask::HandleResponse(Message *msg)
+{
+  //»ñÈ¡¼ÇÂ¼
+  ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
+  const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
+  if (res_cmd == "ivs_result" &&  req_cmd_ == "get_record") {
+    task_thread_->Post(this, task_id_, msg->pdata);
+    return true;
+  }
+  return false;
+}
+
 }

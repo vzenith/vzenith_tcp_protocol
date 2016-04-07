@@ -24,64 +24,32 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef SRC_HSHA_SERIAL_DEV_H_
+#define SRC_HSHA_SERIAL_DEV_H_
 
-#ifndef SRC_VZSDK_VZSDKPUSHHANDLE_H_
-#define SRC_VZSDK_VZSDKPUSHHANDLE_H_
-
-#include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
-#include "vzsdk/task.h"
-#include "vzlprtcpsdk.h"
+#include "vzsdk/vzlprtcpsdk.h"
+#include "vzmodulebase.h"
+
+using namespace vzsdk;
 
 namespace vzsdk {
-
-class PushHandle : public noncopyable
-    , public boost::enable_shared_from_this < PushHandle > {
-
+class VzSerialDev : public VZModuleBase {
   public:
-    PushHandle(const std::string &cmd_key);
-    virtual ~PushHandle();
-    typedef boost::shared_ptr<PushHandle> Ptr;
-    virtual bool HandleMessageData(ResponseData *response) = 0;
-    const std::string &cmd_key() {
-        return cmd_key_;
-    }
+    VzSerialDev(VzsdkService* _service);
+    ~VzSerialDev();
 
-  private:
-    std::string cmd_key_;
-};
+    int SerialStart(uint32 serial_port, VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
 
-//------------------------------------------------------------------------------
-class IvsPushHandle : public PushHandle {
-  public:
-    IvsPushHandle(const std::string &cmd_key);
-    virtual ~IvsPushHandle();
+    int SerialSend(uint32 serial_port, const unsigned char *data, unsigned size_data);
 
-    virtual bool HandleMessageData(ResponseData *response);
+    int SerialStop(uint32 serial_port);
 
-    void SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK _result_callback, void* _result_userdata);
-    void SetSessionID(int session_id_);
-
-  private:
-    VZ_LPRC_RESULT_TYPE GetResultTypeFromTrigBits(unsigned uBitsTrigType);
-    VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback;
-    void* result_userdata;
-
-    int session_id;
-};
-
-class SerialPushHandle : public PushHandle {
-  public:
-    SerialPushHandle(const std::string &cmd_key);
-    virtual ~SerialPushHandle();
-    virtual bool HandleMessageData(ResponseData *response);
     void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
 
-  private:
-    VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func_;
-    void *user_data_;
+private:
+	vzsdk::SerialPushHandle::Ptr serial_handle;
 };
-
 }
 
-#endif // SRC_VZSDK_VZSDKPUSHMANAGER_H_
+#endif

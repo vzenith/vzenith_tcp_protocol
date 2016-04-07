@@ -24,42 +24,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef SRC_HSHA_SYNC_MODULE_BASE_H_
+#define SRC_HSHA_SYNC_MODULE_BASE_H_
 
-#ifndef SRC_VZSDK_VZSDKPUSHMANAGER_H_
-#define SRC_VZSDK_VZSDKPUSHMANAGER_H_
-
-#include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
-#include "vzsdk/task.h"
-#include "vzsdk/vzsdkpushhandle.h"
+#include "vzsdkservice.h"
 
+using namespace vzsdk;
 namespace vzsdk {
-class PushManagerTask : public Task {
+class VzsdkService;
+
+class VZModuleBase {
   public:
-    PushManagerTask(QueueLayer *queue_layer, Thread *push_thread);
-    virtual ~PushManagerTask();
-    virtual uint32 message_type() {
-        return REQ_ADD_PUSH_TASK;
-    }
-    virtual void OnMessage(Message *msg);
-    virtual Message::Ptr SyncProcessTask();
-    virtual bool HandleMessage(Message *msg);
-    void AddPushHandle(PushHandle::Ptr handle);
-    void RemovePushHandle(PushHandle::Ptr handle);
-  private:
-    bool HandleResponse(Message *msg);
-    void ProcessPushEvent(Message *msg);
-  private:
-    static const uint32 PUSH_EVENT_STANZA = 1;
-    static const uint32 ADD_PUSH_HANDLE = 2;
-    static const uint32 REMOVE_PUSH_HANDLE = 3;
-    bool is_register_;
-    typedef std::set<std::string> PushHandleKeys;
-    typedef std::vector<PushHandle::Ptr> PushHandles;
-    PushHandleKeys push_handle_keys_;
-    PushHandles push_handles_;
-    mutable CriticalSection crit_;
+    VZModuleBase(VzsdkService* _sdk_service);
+    virtual ~VZModuleBase();
+
+    Message::Ptr SyncProcessReqTask(const Json::Value &req_json);
+    bool PostReqTask(const Json::Value &req_json);
+
+    int GetSessionID();
+
+  protected:
+    VzsdkService* sdk_service;
 };
 }
 
-#endif // SRC_VZSDK_VZSDKPUSHMANAGER_H_
+#endif

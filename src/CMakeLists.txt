@@ -126,10 +126,29 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
-	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
-	
-    
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservice.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservice.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/commandanalysis.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/commandanalysis.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzconnectdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzconnectdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vziodev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vziodev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmaintendev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmaintendev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmodulebase.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmodulebase.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzrecognition.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzrecognition.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkbase.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkdefines.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzserialdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzserialdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vztcpdevicemanage.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vztcpdevicemanage.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzwlistdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzwlistdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzclientsdk_lpdefine.h
 	)
 
 SOURCE_GROUP(base FILES
@@ -213,8 +232,29 @@ SOURCE_GROUP(vzsdk FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushhandle.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkpushmanager.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.h
-	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservices.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservice.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkservice.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/commandanalysis.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/commandanalysis.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzconnectdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzconnectdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vziodev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vziodev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmaintendev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmaintendev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmodulebase.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzmodulebase.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzrecognition.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzrecognition.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkbase.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzsdkdefines.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzserialdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzserialdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vztcpdevicemanage.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vztcpdevicemanage.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzwlistdev.h
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzwlistdev.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzclientsdk_lpdefine.h
 	)
 
 SET(CONVERALLS_SRC 

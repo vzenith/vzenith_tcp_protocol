@@ -31,31 +31,41 @@ namespace vzsdk {
 ////////////////////////////////////////////////////////////////////////////////
 //------------------------------------------------------------------------------
 ReqConnectData::ReqConnectData(SocketAddress &address)
-  : address_(address),
-    Stanza(REQ_CONNECT_SERVER) {
+    : address_(address),
+      Stanza(REQ_CONNECT_SERVER) {
+}
+
+ReqConnectData::ReqConnectData(const ReqConnectData& _req_connect_data)
+    : Stanza(_req_connect_data)
+    , address_(_req_connect_data.address_) {
 }
 
 //------------------------------------------------------------------------------
 ReqDisconnectData::ReqDisconnectData(uint32 session_id)
-  : Stanza(REQ_DISCONNECT_SERVER, session_id) {
+    : Stanza(REQ_DISCONNECT_SERVER, session_id) {
 }
 
 //------------------------------------------------------------------------------
 RequestData::RequestData(uint32 session_id,
                          const Json::Value &req_json,
                          bool is_push)
-  : Stanza(REQ_SEND_REQUESTION, session_id),
-    req_json_(req_json),
-    is_push_(is_push) {
+    : Stanza(REQ_SEND_REQUESTION, session_id),
+      req_json_(req_json),
+      is_push_(is_push) {
 }
 
 //------------------------------------------------------------------------------
 ResponseData::ResponseData(uint32 session_id,
                            const Json::Value &res_json,
                            const std::string &res_data)
-  : Stanza(RES_STANZA_EVENT, session_id),
-    res_json_(res_json),
-    res_data_(res_data) {
+    : Stanza(RES_STANZA_EVENT, session_id),
+      res_json_(res_json),
+      res_data_(res_data) {
+}
+
+Stanza::Stanza(const Stanza& _stanze) {
+    this->session_id_ = _stanze.session_id_;
+    this->stanza_type_ = _stanze.stanza_type_;
 }
 
 }

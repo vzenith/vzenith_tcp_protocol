@@ -53,6 +53,8 @@ enum StanzaType {
   RES_PUSH_SUCCEED,
   RES_CONNECTED_EVENT,
   RES_STANZA_EVENT,
+  RES_RECONNECT_SERVER,
+  RES_RECONNECT_EVENT
 };
 
 const uint32 NULL_SESSION_ID = 0;
@@ -63,6 +65,7 @@ class Stanza : public MessageData {
     : stanza_type_(stanza_type),
       session_id_(session_id) {
   }
+  Stanza(const Stanza& _stanze);
   uint32 stanza_type() const {
     return stanza_type_;
   }
@@ -75,7 +78,7 @@ class Stanza : public MessageData {
   void set_session_id(uint32 session_id) {
     session_id_ = session_id;
   }
- private:
+  protected:
   uint32 stanza_type_;
   uint32 session_id_;
 };
@@ -85,12 +88,14 @@ class Stanza : public MessageData {
 class ReqConnectData : public Stanza {
  public:
   ReqConnectData(SocketAddress &address);
+  ReqConnectData(const ReqConnectData&);
   SocketAddress &address() {
     return address_;
   }
  private:
   SocketAddress address_;
 };
+typedef boost::shared_ptr<ReqConnectData> ReqConnectDataPtr;
 
 //------------------------------------------------------------------------------
 class ReqDisconnectData : public Stanza {
@@ -122,11 +127,15 @@ class ResponseData : public Stanza {
   ResponseData(uint32 session_id,
                const Json::Value &res_json,
                const std::string &res_data);
-  const Json::Value res_json() const {
+  const Json::Value& res_json() const {
     return res_json_;
   }
-  const std::string res_data() const {
+  const std::string& res_data() const {
     return res_data_;
+  }
+
+  bool isEmpty() const {
+    return res_data_.length() == 0;
   }
  private:
   Json::Value res_json_;

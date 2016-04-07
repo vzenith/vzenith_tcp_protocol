@@ -33,6 +33,7 @@ namespace vzsdk {
 #define JSON_REQ_CMD "cmd"
 
 //
+#define JSON_REQ_CMD_FORCETRIGGER "trigger"
 #define JSON_REQ_CMD_GETSN "getsn"
 #define JSON_PUSH_CMD_IVSRESULT "ivsresult"
 #define JSON_REQ_IVSRESULT_ENABLE "enable"

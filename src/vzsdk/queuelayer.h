@@ -35,9 +35,12 @@
 #include "vzsdk/task.h"
 
 namespace vzsdk {
-class QueueLayer : public noncopyable,
-  public sigslot::has_slots<>,
-  public MessageHandler  {
+  
+  typedef boost::shared_ptr<QueueLayer> QueueLayerPtr;
+
+class QueueLayer : public noncopyable
+  , public sigslot::has_slots<>
+  , public MessageHandler  {
  public:
   QueueLayer();
   virtual ~QueueLayer();
@@ -49,7 +52,17 @@ class QueueLayer : public noncopyable,
   }
   void Post(uint32 id, MessageData::Ptr pdata);
   void Post(Task::Ptr task);
+  virtual void PostDelayed(int cmsDelay,
+    MessageHandler *phandler,
+    uint32 id = 0,
+    MessageData::Ptr pdata = MessageData::Ptr());
+
   void AsyncRemoveTask(Task::Ptr task);
+  boost::shared_ptr<SessionManager> GetSessionManamger(){
+    return session_manager_;
+  }
+
+
  private:
   void OnReqMessage(Message *msg);
   void OnResMessage(Message *msg);
@@ -58,6 +71,7 @@ class QueueLayer : public noncopyable,
   void OnTranslateToAsyncLayer(Message *msg);
   void OnAddPushTaskMessage(Message *msg);
   void OntranslateToSyncLayer(Message *msg);
+  void ReConnect(Message* msg);
 
   bool AddTask(Task::Ptr task);
   bool RemoveTask(uint32 task_id);
