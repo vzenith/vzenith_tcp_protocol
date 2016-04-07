@@ -20,7 +20,7 @@ vzsdk::VzConnectDev::~VzConnectDev() {
 int vzsdk::VzConnectDev::ConnectServer(const std::string& _ip_addr, uint16 _port) {
     int _session_id = SESSION_ID_INVALUE;
     SocketAddress remote_address(_ip_addr, _port);
-    Task::Ptr connect_task(new ConnectTask(sdk_service->GetQueueLayer().get(),
+    Task::Ptr connect_task(new ConnectTask(sdk_service_->GetQueueLayer().get(),
                                            FOREVER_TIMEOUT,
                                            remote_address));
     Message::Ptr msg = connect_task->SyncProcessTask();
@@ -57,7 +57,7 @@ int vzsdk::VzConnectDev::DisconnectServer() {
         LOG(LS_WARNING) << "The session is is zero, is not a right session";
         return SESSION_ID_INVALUE;
     }
-    Task::Ptr disconnect_task(new DisconnectTask(sdk_service->GetQueueLayer().get(),
+    Task::Ptr disconnect_task(new DisconnectTask(sdk_service_->GetQueueLayer().get(),
                               DEFAULT_TIMEOUT,
                               _session_id));
     Message::Ptr msg = disconnect_task->SyncProcessTask();
@@ -94,7 +94,7 @@ int vzsdk::VzConnectDev::GetSessionID() {
 
 vzsdk::Socket::ConnState vzsdk::VzConnectDev::GetConnState() {
     int _session_id = GetSessionID();
-    SessionManager::Ptr session_mana_ = sdk_service->GetQueueLayer()->GetSessionManamger();
+    SessionManager::Ptr session_mana_ = sdk_service_->GetQueueLayer()->GetSessionManamger();
     vzsdk::Session::Ptr _session_ptr = session_mana_->FindSession(_session_id);
     if (_session_ptr) {
         return _session_ptr->GetState();
@@ -112,6 +112,6 @@ int vzsdk::VzConnectDev::ReConnectServer() {
         return SESSION_ID_INVALUE;
 
     req_connect_data_ptr->set_stanza_type(RES_RECONNECT_SERVER);
-    sdk_service->GetQueueLayer()->Post(RES_RECONNECT_SERVER, req_connect_data_ptr);
+    sdk_service_->GetQueueLayer()->Post(RES_RECONNECT_SERVER, req_connect_data_ptr);
     return REQ_SUCCEED;
 }

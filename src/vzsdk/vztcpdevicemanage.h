@@ -40,22 +40,22 @@ class VzTcpDeviceManage {
   public:
     VzTcpDeviceManage();
     ~VzTcpDeviceManage();
-    int CreateNewService(const std::string& _ip
-                         , const int _port
-                         , const std::string& _user_name
-                         , const std::string& _user_pwd);
+    int CreateNewService(const std::string& ip
+                         , const int port
+                         , const std::string& user_name
+                         , const std::string& user_pwd);
 
-    const VzsdkServicesPtr GetService(int _session_id);
-    const VzsdkServicesPtr GetService(const std::string& _ip);
+    const VzsdkServicesPtr GetService(int session_id);
+    const VzsdkServicesPtr GetService(const std::string& ip);
 
-    bool ExistService(int _session_id);
-    bool CloseService(int _session_id);
+    bool ExistService(int session_id);
+    bool CloseService(int session_id);
 
   protected:
-    bool RemoveService(int _session_id);
+    bool RemoveService(int session_id);
 
   private:
-    VzsdkServicesMap vzsdk_service_map;
+    VzsdkServicesMap vzsdk_service_map_;
 };
 }
 

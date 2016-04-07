@@ -47,16 +47,16 @@ class VzsdkService : public noncopyable {
 
     QueueLayerPtr GetQueueLayer();
 
-    VzConnectDevPtr GetConnectDev();
-    VzRecognitionPtr GetRecongintion();
-    VzMaintenDevPtr GetMaintenDev();
+    //功能模块
+    VzConnectDevPtr GetConnectDev();      //设备连接
+    VzRecognitionPtr GetRecongintion();   //车牌识别
+    VzMaintenDevPtr GetMaintenDev();      //设备维护
+    VzWlistDevPtr GetWlistDev();          //白名单
+    VzSerialDevPtr GetSerialDev();        //串口
+    VzIODevPtr GetIODev();                //IO
 
-    VzWlistDevPtr GetWlistDev();
-    VzSerialDevPtr GetSerialDev();
-    VzIODevPtr GetIODev();
-
-    bool Start();
-    bool Stop();
+    bool Start(); //初始化
+    bool Stop();  //停止服务
 
   protected:
     void initModule();
@@ -66,13 +66,13 @@ class VzsdkService : public noncopyable {
     PushManagerTask *push_manager_task_;
     ThreadPtr push_thread_;
 
-    VzConnectDevPtr connect_dev;
-    VzRecognitionPtr recongition;
-    VzMaintenDevPtr maintenDev;
+    VzConnectDevPtr connect_dev_;
+    VzRecognitionPtr recongition_;
+    VzMaintenDevPtr maintenDev_;
 
-    VzWlistDevPtr whist_dev;
-    VzSerialDevPtr serial_dev;
-    VzIODevPtr io_dev;
+    VzWlistDevPtr whist_dev_;
+    VzSerialDevPtr serial_dev_;
+    VzIODevPtr io_dev_;
 };
 }
 

@@ -36,7 +36,7 @@ class VzsdkService;
 
 class VZModuleBase {
   public:
-    VZModuleBase(VzsdkService* _sdk_service);
+    VZModuleBase(VzsdkService* sdk_service);
     virtual ~VZModuleBase();
 
     Message::Ptr SyncProcessReqTask(const Json::Value &req_json);
@@ -45,7 +45,7 @@ class VZModuleBase {
     int GetSessionID();
 
   protected:
-    VzsdkService* sdk_service;
+    VzsdkService* sdk_service_;
 };
 }
 

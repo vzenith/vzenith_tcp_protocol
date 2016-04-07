@@ -48,7 +48,7 @@ class VzSerialDev : public VZModuleBase {
     void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
 
 private:
-	vzsdk::SerialPushHandle::Ptr serial_handle;
+	vzsdk::SerialPushHandle::Ptr serial_handle_;
 };
 }
 

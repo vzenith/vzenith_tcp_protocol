@@ -4,9 +4,9 @@
 #include "base\logging.h"
 #include "vzsdkpushhandle.h"
 
-vzsdk::VzRecognition::VzRecognition(VzsdkService* _service)
-    : VZModuleBase(_service)
-    , ivs_handle(new vzsdk::IvsPushHandle("ivs_result")) {
+vzsdk::VzRecognition::VzRecognition(VzsdkService* service)
+    : VZModuleBase(service)
+    , ivs_handle_(new vzsdk::IvsPushHandle("ivs_result")) {
 }
 
 
@@ -21,19 +21,19 @@ vzsdk::VzRecognition::~VzRecognition() {
 // 返回值:   int
 // 说明:     根据记录的ID，获取车牌识别记录
 /************************************************************************/
-int vzsdk::VzRecognition::GetRecord(int _record_id, bool _need_image, TH_PlateResult& oPlateResult) {
+int vzsdk::VzRecognition::GetRecord(int record_id, bool need_image, TH_PlateResult& oPlateResult) {
     Json::Value req_json;
-    int _session_id = sdk_service->GetSessionID();
-    commandanalysis::GeneratGetRecordByIdCmd(_record_id, _need_image, req_json);
+    int session_id = sdk_service_->GetSessionID();
+    commandanalysis::GeneratGetRecordByIdCmd(record_id, need_image, req_json);
     std::string result;
-    if (_session_id == 0) {
+    if (session_id == 0) {
         LOG(LS_WARNING) << "The session is is zero, is not a right session";
         return SESSION_ID_INVALUE;
     }
 
-    Task::Ptr req_task(new ReqRecordTask(sdk_service->GetQueueLayer().get(),
+    Task::Ptr req_task(new ReqRecordTask(sdk_service_->GetQueueLayer().get(),
                                          DEFAULT_TIMEOUT,
-                                         _session_id,
+                                         session_id,
                                          req_json));
 
     Message::Ptr msg = req_task->SyncProcessTask();
@@ -43,10 +43,10 @@ int vzsdk::VzRecognition::GetRecord(int _record_id, bool _need_image, TH_PlateRe
 
     //解析车牌
     ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
-    Json::Value _value = response->res_json();
-    TH_PlateResult _plate_result;
+    Json::Value value = response->res_json();
+    TH_PlateResult plate_result;
     int nFullImgSize = 0, nClipImgSize = 0;
-    commandanalysis::ParsePlateResultResponse(_value, _plate_result, nFullImgSize, nClipImgSize);
+    commandanalysis::ParsePlateResultResponse(value, plate_result, nFullImgSize, nClipImgSize);
 
     void *pImage = NULL;
     void *pClipImage = NULL;
@@ -66,9 +66,9 @@ int vzsdk::VzRecognition::GetRecord(int _record_id, bool _need_image, TH_PlateRe
 // 返回值:   int
 // 说明:     根据图片ID，获取图片
 /************************************************************************/
-int vzsdk::VzRecognition::GetImage(int _image_id, char* _image_data, int& _image_size) {
+int vzsdk::VzRecognition::GetImage(int image_id, char* image_data, int& image_size) {
     Json::Value req_json;
-    commandanalysis::GeneratGetImageByIdCmd(_image_id, req_json);
+    commandanalysis::GeneratGetImageByIdCmd(image_id, req_json);
 
     Message::Ptr _msg = SyncProcessReqTask(req_json);
     if (!_msg || _msg->phandler == NULL) {
@@ -79,17 +79,17 @@ int vzsdk::VzRecognition::GetImage(int _image_id, char* _image_data, int& _image
     ResponseData *response = static_cast<ResponseData *>(_msg->pdata.get());
     Json::Value result = response->res_json();
 
-    RECORD_RESPONSE _responese;
-    commandanalysis::ParseRecordResponse(result, &_responese);
+    RECORD_RESPONSE responese;
+    commandanalysis::ParseRecordResponse(result, &responese);
 
-    if (_responese.id != _image_id)
+    if (responese.id != image_id)
         return REQ_FAILED;
 
-    int _len = strlen(response->res_data().c_str());
+    int len = strlen(response->res_data().c_str());
     const char* res_data = response->res_data().c_str();
-    const char* _get_image_data = res_data + _len + 1;
-    _image_size = _responese.size;
-    memcpy(_image_data, _get_image_data, _responese.size);
+    const char* get_image_data = res_data + len + 1;
+    image_size = responese.size;
+    memcpy(image_data, get_image_data, responese.size);
     return REQ_SUCCEED;
 }
 
@@ -110,10 +110,10 @@ int vzsdk::VzRecognition::ForceTrigger() {
 }
 
 int vzsdk::VzRecognition::setReciveIvsResultCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK _func, void* _UserData, int bEnableImage) {
-    static_cast<IvsPushHandle*>(ivs_handle.get())->SetPlateCallBack(_func, _UserData);
-    sdk_service->AddPushHandle(ivs_handle);
-    ReciveIvsResult(sdk_service->GetSessionID()
-                    , ivs_handle
+    static_cast<IvsPushHandle*>(ivs_handle_.get())->SetPlateCallBack(_func, _UserData);
+    sdk_service_->AddPushHandle(ivs_handle_);
+    ReciveIvsResult(sdk_service_->GetSessionID()
+                    , ivs_handle_
                     , true
                     , vzsdk::FORMAT_JSON
                     , bEnableImage
@@ -146,8 +146,8 @@ int vzsdk::VzRecognition::ReciveIvsResult(uint32 session_id,
 
     Json::Value _req_json;
     commandanalysis::GeneratIVSResult(enable_result, format, enable_img, img_type, _req_json);
-    sdk_service->AddPushHandle(handle);
-    Task::Ptr req_task(new ReqPushTask(sdk_service->GetQueueLayer().get(),
+    sdk_service_->AddPushHandle(handle);
+    Task::Ptr req_task(new ReqPushTask(sdk_service_->GetQueueLayer().get(),
                                        DEFAULT_TIMEOUT,
                                        session_id,
                                        _req_json));

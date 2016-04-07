@@ -59,17 +59,18 @@ class IvsPushHandle : public PushHandle {
 
     virtual bool HandleMessageData(ResponseData *response);
 
-    void SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK _result_callback, void* _result_userdata);
-    void SetSessionID(int session_id_);
+    void SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback, void* result_userdata);
+    void SetSessionID(int session_id);
 
   private:
     VZ_LPRC_RESULT_TYPE GetResultTypeFromTrigBits(unsigned uBitsTrigType);
-    VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback;
-    void* result_userdata;
+    VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback_;
+    void* result_userdata_;
 
-    int session_id;
+    int session_id_;
 };
 
+//------------------------------------------------------------------------------
 class SerialPushHandle : public PushHandle {
   public:
     SerialPushHandle(const std::string &cmd_key);

@@ -46,7 +46,7 @@ namespace vzsdk {
 /************************************************************************/
 VzsdkService::VzsdkService()
     : push_manager_task_(NULL)
-    , connect_dev(NULL) {
+    , connect_dev_(NULL) {
 
 }
 
@@ -55,7 +55,7 @@ VzsdkService::~VzsdkService() {
 }
 
 int VzsdkService::GetSessionID() {
-    return connect_dev->GetSessionID();
+    return connect_dev_->GetSessionID();
 }
 
 /************************************************************************/
@@ -98,22 +98,22 @@ bool VzsdkService::Stop() {
 
 void VzsdkService::initModule() {
     VzConnectDevPtr _conncet_dev_ptr(new VzConnectDev(this));
-    connect_dev = _conncet_dev_ptr;
+    connect_dev_ = _conncet_dev_ptr;
 
     VzRecognitionPtr _recognition_ptr(new VzRecognition(this));
-    recongition = _recognition_ptr;
+    recongition_ = _recognition_ptr;
 
     VzMaintenDevPtr _mainten_dev_ptr(new VzMaintenDev(this));
-    maintenDev = _mainten_dev_ptr;
+    maintenDev_ = _mainten_dev_ptr;
 
     VzWlistDevPtr _whist_dev_ptr(new VzWlistDev(this));
-    whist_dev = _whist_dev_ptr;
+    whist_dev_ = _whist_dev_ptr;
 
     VzSerialDevPtr _serial_dev_ptr(new VzSerialDev(this));
-    serial_dev = _serial_dev_ptr;
+    serial_dev_ = _serial_dev_ptr;
 
     VzIODevPtr _io_dev_ptr(new VzIODev(this));
-    io_dev = _io_dev_ptr;
+    io_dev_ = _io_dev_ptr;
 }
 
 /************************************************************************/
@@ -145,26 +145,26 @@ vzsdk::QueueLayerPtr VzsdkService::GetQueueLayer() {
 }
 
 vzsdk::VzConnectDevPtr VzsdkService::GetConnectDev() {
-    return connect_dev;
+    return connect_dev_;
 }
 
 vzsdk::VzRecognitionPtr VzsdkService::GetRecongintion() {
-    return recongition;
+    return recongition_;
 }
 
 vzsdk::VzMaintenDevPtr VzsdkService::GetMaintenDev() {
-    return maintenDev;
+    return maintenDev_;
 }
 
 vzsdk::VzWlistDevPtr VzsdkService::GetWlistDev() {
-    return whist_dev;
+    return whist_dev_;
 }
 
 vzsdk::VzSerialDevPtr VzsdkService::GetSerialDev() {
-    return serial_dev;
+    return serial_dev_;
 }
 
 vzsdk::VzIODevPtr VzsdkService::GetIODev() {
-    return io_dev;
+    return io_dev_;
 }
 }

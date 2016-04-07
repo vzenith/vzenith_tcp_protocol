@@ -81,8 +81,8 @@ bool IvsPushHandle::HandleMessageData(ResponseData *response) {
     if (nClipImgSize > 0)
         pClipImage = (unsigned char *)(response->res_data().c_str() + len + nFullImgSize + 1);
 
-    if (result_callback) {
-        result_callback(session_id, result_userdata
+    if (result_callback_) {
+        result_callback_(session_id_, result_userdata_
                         , &plate_result_, 1
                         , GetResultTypeFromTrigBits(plate_result_.uBitsTrigType)
                         , pImage, nFullImgSize
@@ -91,13 +91,13 @@ bool IvsPushHandle::HandleMessageData(ResponseData *response) {
     return true;
 }
 
-void IvsPushHandle::SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK _result_callback, void* _result_userdata) {
-    result_callback = _result_callback;
-    result_userdata = _result_userdata;
+void IvsPushHandle::SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback, void* result_userdata) {
+    result_callback_ = result_callback;
+    result_userdata_ = result_userdata;
 }
 
-void IvsPushHandle::SetSessionID(int session_id_) {
-    session_id = session_id_;
+void IvsPushHandle::SetSessionID(int session_id) {
+  session_id_ = session_id;
 }
 
 //------------------------------------------------------------------------------

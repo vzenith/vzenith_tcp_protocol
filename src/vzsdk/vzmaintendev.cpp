@@ -15,7 +15,7 @@ vzsdk::VzMaintenDev::~VzMaintenDev() {
 
 int VzMaintenDev::GetDeviceSN(std::string &sn) {
     Json::Value req_json;
-    commandanalysis::GeneratGetDeviceSN(sdk_service->GetSessionID(), req_json);
+    commandanalysis::GeneratGetDeviceSN(sdk_service_->GetSessionID(), req_json);
 
     Message::Ptr msg = SyncProcessReqTask(req_json);
     if (!msg || msg->phandler == NULL) {

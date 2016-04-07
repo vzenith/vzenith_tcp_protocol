@@ -41,11 +41,11 @@ class VzsdkService;
 
 class VzRecognition : public VZModuleBase {
   public:
-    explicit VzRecognition(VzsdkService* _service);
+    explicit VzRecognition(VzsdkService* service);
     ~VzRecognition();
 
-    int GetRecord(int _record_id, bool _need_image, TH_PlateResult& oPlateResult);
-    int GetImage(int _image_id, char* _image_ata, int& _image_size);
+    int GetRecord(int record_id, bool need_image, TH_PlateResult& oPlateResult);
+    int GetImage(int image_id, char* image_ata, int& image_size);
     int ForceTrigger();
     int setReciveIvsResultCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK func,
                                    void *pUserData,
@@ -60,7 +60,7 @@ class VzRecognition : public VZModuleBase {
                         IvsImgType img_type);
 
   private:
-    vzsdk::IvsPushHandle::Ptr ivs_handle;
+    vzsdk::IvsPushHandle::Ptr ivs_handle_;
 };
 }
 

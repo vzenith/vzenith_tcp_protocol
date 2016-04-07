@@ -13,12 +13,6 @@ vzsdk::VzTcpDeviceManage::VzTcpDeviceManage() {
 // 说明:     析构，释放资源
 /************************************************************************/
 vzsdk::VzTcpDeviceManage::~VzTcpDeviceManage() {
-    for (VzsdkServicesMap::iterator it = vzsdk_service_map.begin();
-            it != vzsdk_service_map.end();
-            ++it) {
-        //it->second->GetConnectDev()->DisconnectServer();
-    }
-    vzsdk_service_map.clear();
 }
 
 /************************************************************************/
@@ -27,10 +21,10 @@ vzsdk::VzTcpDeviceManage::~VzTcpDeviceManage() {
 // 返回值:   bool
 // 说明:     是否存在session_id对应的服务
 /************************************************************************/
-bool vzsdk::VzTcpDeviceManage::ExistService(int _session_id) {
+bool vzsdk::VzTcpDeviceManage::ExistService(int session_id) {
     bool bExist = true;
-    VzsdkServicesMap::iterator it = vzsdk_service_map.find(_session_id);
-    if (it == vzsdk_service_map.end())
+    VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
+    if (it == vzsdk_service_map_.end())
         bExist = false;
     return bExist;
 }
@@ -41,28 +35,28 @@ bool vzsdk::VzTcpDeviceManage::ExistService(int _session_id) {
 // 返回值:   const VzsdkServicesPtr
 // 说明:     根据session_id获取到服务
 /************************************************************************/
-const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(int _session_id) {
-    VzsdkServicesPtr _vzsdk_service;
-    if (ExistService(_session_id)) {
-        VzsdkServicesMap::iterator it = vzsdk_service_map.find(_session_id);
-        _vzsdk_service = it->second;
+const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(int session_id) {
+    VzsdkServicesPtr vzsdk_service;
+    if (ExistService(session_id)) {
+        VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
+        vzsdk_service = it->second;
     }
-    return _vzsdk_service;
+    return vzsdk_service;
 }
 
-const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(const std::string& _ip) {
-    VzsdkServicesPtr _vzsdk_service;
-    for (VzsdkServicesMap::iterator it = vzsdk_service_map.begin();
-            it != vzsdk_service_map.end();
+const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(const std::string& ip) {
+    VzsdkServicesPtr vzsdk_service;
+    for (VzsdkServicesMap::iterator it = vzsdk_service_map_.begin();
+            it != vzsdk_service_map_.end();
             ++it) {
         VzConnectDevPtr _connect_ptr = it->second->GetConnectDev();
-        if (_ip == _connect_ptr->GetIP()) {
-            _vzsdk_service = it->second;
+        if (ip == _connect_ptr->GetIP()) {
+            vzsdk_service = it->second;
             break;
         }
     }
 
-    return _vzsdk_service;
+    return vzsdk_service;
 }
 
 /************************************************************************/
@@ -71,11 +65,11 @@ const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(const std::string& _
 // 返回值:   bool
 // 说明:     从映射表中移除服务
 /************************************************************************/
-bool vzsdk::VzTcpDeviceManage::RemoveService(int _session_id) {
+bool vzsdk::VzTcpDeviceManage::RemoveService(int session_id) {
     bool bRet = false;
-    VzsdkServicesMap::iterator it = vzsdk_service_map.find(_session_id);
-    if (it != vzsdk_service_map.end()) {
-        vzsdk_service_map.erase(it);
+    VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
+    if (it != vzsdk_service_map_.end()) {
+        vzsdk_service_map_.erase(it);
         bRet = true;
     }
 
@@ -91,14 +85,14 @@ bool vzsdk::VzTcpDeviceManage::RemoveService(int _session_id) {
 // 返回值:   int
 // 说明:     创建新的服务
 /************************************************************************/
-int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& _ip, const int _port, const std::string& _user_name, const std::string& _user_pwd) {
-    VzsdkServicesPtr _sdk_service(new VzsdkService);
-    _sdk_service->Start();
-    int _session_id = _sdk_service->GetConnectDev()->ConnectServer(_ip, _port);
-    if (_session_id != SESSION_ID_INVALUE) {
-        vzsdk_service_map.insert(std::make_pair(_session_id, _sdk_service));
+int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& ip, const int port, const std::string& user_name, const std::string& user_pwd) {
+    VzsdkServicesPtr sdk_service(new VzsdkService);
+    sdk_service->Start();
+    int session_id = sdk_service->GetConnectDev()->ConnectServer(ip, port);
+    if (session_id != SESSION_ID_INVALUE) {
+        vzsdk_service_map_.insert(std::make_pair(session_id, sdk_service));
     }
-    return _session_id;
+    return session_id;
 }
 
 /************************************************************************/
@@ -107,14 +101,14 @@ int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& _ip, const int
 // 返回值:   bool
 // 说明:     关闭服务
 /************************************************************************/
-bool vzsdk::VzTcpDeviceManage::CloseService(int _session_id) {
-    if (!ExistService(_session_id))
+bool vzsdk::VzTcpDeviceManage::CloseService(int session_id) {
+    if (!ExistService(session_id))
         return false;
 
-    VzsdkServicesPtr _sdk_service = GetService(_session_id);
-    if (_sdk_service) {
-        _sdk_service->Stop();
-        RemoveService(_session_id);
+    VzsdkServicesPtr sdk_service = GetService(session_id);
+    if (sdk_service) {
+        sdk_service->Stop();
+        RemoveService(session_id);
     }
     return true;
 }

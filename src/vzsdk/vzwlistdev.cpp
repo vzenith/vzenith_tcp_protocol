@@ -5,8 +5,8 @@
 #include "commandanalysis.h"
 
 
-vzsdk::VzWlistDev::VzWlistDev(VzsdkService* _service)
-    : VZModuleBase(_service) {
+vzsdk::VzWlistDev::VzWlistDev(VzsdkService* service)
+    : VZModuleBase(service) {
     func_		= NULL;
     user_data_  = NULL;
 }
