@@ -141,6 +141,6 @@ ADD_SUBDIRECTORY(test/connected_test)
 ADD_SUBDIRECTORY(test/boost_test)
 
 IF(ENABLE_UNIT_TEST)
-	enable_testing()
-	ADD_SUBDIRECTORY(test/unit_test)
+	#enable_testing()
+	#ADD_SUBDIRECTORY(test/unit_test)
 ENDIF()

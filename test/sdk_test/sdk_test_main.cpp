@@ -28,6 +28,8 @@
 #include <iostream>
 #include "base/logging.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sstream>
 #include "vzsdk/vzlprtcpsdk.h"
 
