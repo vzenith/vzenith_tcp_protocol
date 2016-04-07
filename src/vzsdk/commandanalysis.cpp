@@ -61,13 +61,16 @@ bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _js
         //_json_value["data"]		= "all";
         //_json_value["datalen"]	= 3;
 
+        int len = 0;
         if (serial_port == 0) {
         	_json_value["data"] = "rs485-1";
-        	_json_value["datalen"] = strlen("rs485-1");
+          len = strlen("rs485-1");
+          _json_value["datalen"] = len;
         }
-        else if (serial_port == 1) {
+        else if (serial_port == 1) {          
         	_json_value["data"] = "rs485-2";
-        	_json_value["datalen"] = strlen("rs485-2");
+          len = strlen("rs485-2");
+          _json_value["datalen"] = len;
         }
 
         ret = true;
