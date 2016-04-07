@@ -32,7 +32,7 @@
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/vzsdkpushmanager.h"
 #include "vzsdkdefines.h"
-#include "VzClientSDK_LPDefine.h"
+#include "vzclientsdk_lpdefine.h"
 
 namespace vzsdk {
 class VzsdkService : public noncopyable {

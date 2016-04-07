@@ -29,7 +29,7 @@
 
 #include <string>
 #include "json\json.h"
-#include "VzClientSDK_LPDefine.h"
+#include "vzclientsdk_lpdefine.h"
 #include "vzsdkdefines.h"
 
 using namespace std;

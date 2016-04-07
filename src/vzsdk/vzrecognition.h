@@ -28,7 +28,7 @@
 #define SRC_HSHA_RECONGINITION_H_
 
 #include "vzsdk\queuelayer.h"
-#include "VzClientSDK_LPDefine.h"
+#include "vzclientsdk_lpdefine.h"
 #include "vzsdkpushhandle.h"
 #include "vzsdkdefines.h"
 #include "vzlprtcpsdk.h"
