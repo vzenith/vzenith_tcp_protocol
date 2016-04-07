@@ -31,7 +31,7 @@
 #include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/task.h"
-#include "vzlprtcpsdk.h"
+#include "vzsdk/vzlprtcpsdk.h"
 
 namespace vzsdk {
 

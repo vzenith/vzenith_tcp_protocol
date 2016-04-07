@@ -29,8 +29,8 @@
 
 #include <string>
 #include "json/json.h"
-#include "vzclientsdk_lpdefine.h"
-#include "vzsdkdefines.h"
+#include "vzsdk/vzclientsdk_lpdefine.h"
+#include "vzsdk/vzsdkdefines.h"
 
 using namespace std;
 
@@ -89,19 +89,19 @@ public:
 
   static string GeneratCommonCmd(const char *command);
   static bool GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value);
-  static Json::Value GeneratSerialStopCmd();
-  static Json::Value GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen);
+  static void GeneratSerialStopCmd(Json::Value& _json_value);
+  static bool GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& _json_value);
   static void GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& _json_value);
   static void GeneratCancelOfflineCheckCmd(Json::Value& _json_value);
   static void GeneratGetImageByIdCmd(int id, Json::Value& _json_value);
   static void GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value& _json_value);
-  static Json::Value GeneratGetGPIOValueCmd(int gpio);
-  static Json::Value GeneratSetGPIOAutoCmd(int gpio, int duration);
-  static Json::Value GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item);
-  static Json::Value GeneratDeleteWlistVehicleCmd(const char* plate_code);
-  static Json::Value GeneratQueryWlistVehicleCmd(const char* plate_code);
-  static Json::Value GeneratTTransmissionCmd(const char *comm, const char* data, int datalen);
-  static Json::Value GeneratOfflineCheckCmd(unsigned int interval);
+  static void GeneratGetGPIOValueCmd(int gpio, Json::Value& _json_value);
+  static void GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& _json_value);
+  static void GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& _json_value);
+  static void GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& _json_value);
+  static void GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& _json_value);
+  static void GeneratTTransmissionCmd(const char *comm, const char* data, int datalen, Json::Value& _json_value);
+  static void GeneratOfflineCheckCmd(unsigned int interval, Json::Value& _json_value);
 
   //mainten
   static void GeneratGetDeviceSN(int _session_id, Json::Value& _json_value);

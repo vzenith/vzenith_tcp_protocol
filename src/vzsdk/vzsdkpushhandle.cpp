@@ -25,12 +25,12 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "vzsdkpushmanager.h"
+#include "vzsdk/vzsdkpushmanager.h"
 #include "vzsdk/task.h"
 #include "base/logging.h"
 #include "vzsdk/vzsdkbase.h"
 #include "base/base64.h"
-#include "commandanalysis.h"
+#include "vzsdk/commandanalysis.h"
 
 namespace vzsdk {
 PushHandle::PushHandle(const std::string &cmd_key)
@@ -118,6 +118,12 @@ SerialPushHandle::~SerialPushHandle() {
 }
 
 bool SerialPushHandle::HandleMessageData(ResponseData *response) {
+	std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
+
+	if (!(response->stanza_type() == RES_STANZA_EVENT
+		&& res_cmd == cmd_key()))
+		return false;
+
     LOG(LS_INFO) << response->res_json().toStyledString();
 
     Json::Value res_value = response->res_json();
@@ -127,12 +133,11 @@ bool SerialPushHandle::HandleMessageData(ResponseData *response) {
 
     if (strcmp(value.subcmd, "send") == 0) {
         int comm = value.comm;
-        unsigned int decodeLen = value.datalen;
         const char *pdata = value.data;
 
         vector<char> decode_result;
         size_t size_used = 0;
-        vzsdk::Base64::DecodeFromArray(pdata, decodeLen, Base64::DO_LAX, &decode_result, &size_used);
+		vzsdk::Base64::DecodeFromArray(pdata, strlen(pdata), Base64::DO_LAX, &decode_result, &size_used);
         if (func_) {
             unsigned int count = decode_result.size();
             unsigned char *buffer = new  unsigned char[count];

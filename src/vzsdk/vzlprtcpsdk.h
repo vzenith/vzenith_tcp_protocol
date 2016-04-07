@@ -1,6 +1,32 @@
+/*
+* vzsdk
+* Copyright 2013 - 2016, Vzenith Inc.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*
+*  1. Redistributions of source code must retain the above copyright notice,
+*     this list of conditions and the following disclaimer.
+*  2. Redistributions in binary form must reproduce the above copyright notice,
+*     this list of conditions and the following disclaimer in the documentation
+*     and/or other materials provided with the distribution.
+*  3. The name of the author may not be used to endorse or promote products
+*     derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+* WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+* MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+* EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+* PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+* WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+* OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+* ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 #ifndef _VZ_LPRC_TCP_SDK_H_
 #define _VZ_LPRC_TCP_SDK_H_
-#include "vzlprtcpsdkdefine.h"
+#include "vzsdk/vzlprtcpsdkdefine.h"
 
 #ifdef WIN32
 	#ifdef _DEV_API_
@@ -167,11 +193,10 @@ VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SerialSend(VzLPRTcpHandle handle, int nSe
 /**
 *  @brief 透明通道停止发送数据
 *  @param  [IN] handle 由VzLPRTcp_Open函数获得的句柄
-*  @param  [IN] nSerialPort 指定使用设备的串口序号：0表示第一个串口，1表示第二个串口
 *  @return 0表示成功，其他值表示失败
 *  @ingroup group_device
 */
-VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SerialStop(VzLPRTcpHandle handle, int nSerialPort);
+VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SerialStop(VzLPRTcpHandle handle);
 
 /**
 *  @brief 设置IO输出，并自动复位

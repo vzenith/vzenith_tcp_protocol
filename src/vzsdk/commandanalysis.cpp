@@ -1,11 +1,38 @@
-#include "commandanalysis.h"
-#include <stdio.h>
+/*
+ * vzsdk
+ * Copyright 2013 - 2016, Vzenith Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *     this list of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
+ *     and/or other materials provided with the distribution.
+ *  3. The name of the author may not be used to endorse or promote products
+ *     derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifndef _WIN32
 #include <string.h>
 #include <stdio.h>
 #endif
+
+#include "vzsdk/commandanalysis.h"
 #include "base/base64.h"
-#include "vzsdkbase.h"
+#include "vzsdk/vzsdkbase.h"
 
 
 commandanalysis::commandanalysis(void) {
@@ -31,17 +58,17 @@ bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _js
     if (serial_port == 0 || serial_port == 1) {
         _json_value["cmd"]		= "ttransmission";
         _json_value["subcmd"]	= "init";
-        _json_value["data"]		= "all";
-        _json_value["datalen"]	= 3;
+        //_json_value["data"]		= "all";
+        //_json_value["datalen"]	= 3;
 
-        //if (serial_port == 0) {
-        //	_json_value["data"] = "rs485-1";
-        //	_json_value["datalen"] = strlen("rs485-1");
-        //}
-        //else if (serial_port == 1) {
-        //	_json_value["data"] = "rs485-2";
-        //	_json_value["datalen"] = strlen("rs485-2");
-        //}
+        if (serial_port == 0) {
+        	_json_value["data"] = "rs485-1";
+        	_json_value["datalen"] = strlen("rs485-1");
+        }
+        else if (serial_port == 1) {
+        	_json_value["data"] = "rs485-2";
+        	_json_value["datalen"] = strlen("rs485-2");
+        }
 
         ret = true;
     }
@@ -49,36 +76,34 @@ bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _js
     return ret;
 }
 
-Json::Value commandanalysis::GeneratSerialStopCmd() {
-    string cmd;
-    Json::Value root;
-    root["cmd"]		= "ttransmission";
-    root["subcmd"]  = "uninit";
-
-    cmd = root.toStyledString();
-    return cmd;
+void commandanalysis::GeneratSerialStopCmd(Json::Value& _json_value) {
+	_json_value["cmd"] = "ttransmission";
+	_json_value["subcmd"] = "uninit";
 }
 
-Json::Value commandanalysis::GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen) {
-    string cmd;
+bool commandanalysis::GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& _json_value) {
+	bool ret = false;
 
-    Json::Value root;
+	if (serial_port == 0 || serial_port == 1) {
+		_json_value["cmd"] = "ttransmission";
+		_json_value["subcmd"] = "send";
+		if (serial_port == 0) {
+			_json_value["comm"] = "rs485-1";
+		}
+		else if (serial_port == 1) {
+			_json_value["comm"] = "rs485-2";
+		}
 
-    root["cmd"]		= "ttransmission";
-    root["subcmd"]  = "send";
-    if (serial_port == 0) {
-        root["comm"] = "rs485-1";
-    } else if (serial_port == 1) {
-        root["comm"] = "rs485-2";
-    }
+		string result;
+		vzsdk::Base64::EncodeFromArray(data, datalen, &result);
 
-    string result;
-    vzsdk::Base64::EncodeFromArray(data, datalen, &result);
+		_json_value["data"] = result;
+		_json_value["datalen"] = datalen;
 
-    root["data"]	= result;
-    root["datalen"] = datalen;
+		ret = true;
+	}
 
-    return root;
+	return ret;
 }
 
 void commandanalysis::GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& _json_value) {
@@ -103,8 +128,10 @@ void commandanalysis::GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value&
     _json_value["image"]	= needImg ? true : false;
 }
 
-Json::Value commandanalysis::GeneratOfflineCheckCmd(unsigned int interval) {
-    return Json::Value();
+void commandanalysis::GeneratOfflineCheckCmd(unsigned int interval, Json::Value& _json_value) {
+	_json_value["cmd"] = "offline";
+	_json_value["interval"] = interval;
+
 }
 
 void commandanalysis::GeneratGetDeviceSN(int _session_id, Json::Value& _json_value) {
@@ -140,30 +167,22 @@ void commandanalysis::GeneratForceTrigger(Json::Value& _json_value) {
     _json_value[JSON_REQ_CMD] = JSON_REQ_CMD_FORCETRIGGER;
 }
 
-Json::Value commandanalysis::GeneratGetGPIOValueCmd(int gpio) {
+void commandanalysis::GeneratGetGPIOValueCmd(int gpio, Json::Value& _json_value) {
+	_json_value["cmd"] = "get_gpio_value";
+	_json_value["gpio"] = gpio;
 
-    Json::Value root;
-
-    root["cmd"]		= "get_gpio_value";
-    root["gpio"]	= gpio;
-
-    return root;
 }
 
-Json::Value commandanalysis::GeneratSetGPIOAutoCmd(int gpio, int duration) {
-    string cmd;
+void commandanalysis::GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& _json_value) {
 
-    Json::Value root;
+	_json_value["cmd"] = "ioctl";
+	_json_value["io"] = gpio;
+	_json_value["value"] = 2;		//VALUE 0:关，1开，2先通后断
+	_json_value["delay"] = duration;
 
-    root["cmd"]		= "ioctl";
-    root["io"]		= gpio;
-    root["value"]	= 2;		//VALUE 0:关，1开，2先通后断
-    root["delay"]	= duration;
-
-    return root;
 }
 
-Json::Value commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item) {
+void commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& _json_value) {
     // 起效的时间
     char enable_time[64] = {0};
     sprintf(enable_time, "%d-%02d-%02d %02d:%02d:%02d", item->struTMEnable.nYear, item->struTMEnable.nMonth, item->struTMEnable.nMDay,
@@ -174,13 +193,10 @@ Json::Value commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEH
     sprintf(overdue_time, "%d-%02d-%02d %02d:%02d:%02d", item->struTMOverdule.nYear, item->struTMOverdule.nMonth, item->struTMOverdule.nMDay,
             item->struTMOverdule.nHour, item->struTMOverdule.nMin, item->struTMOverdule.nSec);
 
-    string cmd;
-
-    Json::Value root;
     Json::Value record;
 
-    root["cmd"]				= "white_list_operator";
-    root["operator_type"]	= "update_or_add";
+	_json_value["cmd"] = "white_list_operator";
+	_json_value["operator_type"] = "update_or_add";
 
     record["index"]				= item->uVehicleID;
     record["plate"]				= item->strPlateID;
@@ -193,31 +209,22 @@ Json::Value commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEH
     record["vehicle_code"]		= item->strCode;
     record["vehicle_comment"]	= item->strComment;
 
-    root["dldb_rec"] = record;
-
-    return root;
+	_json_value["dldb_rec"] = record;
 }
 
-Json::Value commandanalysis::GeneratDeleteWlistVehicleCmd(const char* plate_code) {
-    Json::Value root;
+void commandanalysis::GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& _json_value) {
 
-    root["cmd"]				= "white_list_operator";
-    root["operator_type"]	= "delete";
-    root["plate"]			= plate_code;
-
-    return root;
+	_json_value["cmd"] = "white_list_operator";
+	_json_value["operator_type"] = "delete";
+	_json_value["plate"] = plate_code;
 }
 
-Json::Value commandanalysis::GeneratQueryWlistVehicleCmd(const char* plate_code) {
+void commandanalysis::GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& _json_value) {
 
-    Json::Value root;
-
-    root["cmd"]				= "white_list_operator";
-    root["operator_type"]	= "select";
-    root["sub_type"]		= "plate";
-    root["plate"]			= plate_code;
-
-    return root;
+	_json_value["cmd"] = "white_list_operator";
+	_json_value["operator_type"] = "select";
+	_json_value["sub_type"] = "plate";
+	_json_value["plate"] = plate_code;
 }
 
 void commandanalysis::ParseTTransmissionResponse(Json::Value &root, TTRANSMISSION_RESPONSE *value ) {

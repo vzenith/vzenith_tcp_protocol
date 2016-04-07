@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "vzsdkpushmanager.h"
+#include "vzsdk/vzsdkpushmanager.h"
 #include "vzsdk/task.h"
 #include "base/logging.h"
 #include "vzsdk/vzsdkbase.h"

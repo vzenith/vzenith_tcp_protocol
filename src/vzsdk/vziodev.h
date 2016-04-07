@@ -29,7 +29,7 @@
 
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/vzlprtcpsdk.h"
-#include "vzmodulebase.h"
+#include "vzsdk/vzmodulebase.h"
 
 using namespace vzsdk;
 

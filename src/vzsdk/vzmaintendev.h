@@ -28,7 +28,7 @@
 #define SRC_HSHA_MAINTEN_H_
 
 #include "vzsdk/queuelayer.h"
-#include "vzmodulebase.h"
+#include "vzsdk/vzmodulebase.h"
 
 using namespace vzsdk;
 

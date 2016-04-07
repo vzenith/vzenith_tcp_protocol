@@ -31,8 +31,8 @@
 #include "base/noncopyable.h"
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/vzsdkpushmanager.h"
-#include "vzsdkdefines.h"
-#include "vzclientsdk_lpdefine.h"
+#include "vzsdk/vzsdkdefines.h"
+#include "vzsdk/vzclientsdk_lpdefine.h"
 
 namespace vzsdk {
 class VzsdkService : public noncopyable {

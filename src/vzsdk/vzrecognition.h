@@ -28,12 +28,12 @@
 #define SRC_HSHA_RECONGINITION_H_
 
 #include "vzsdk/queuelayer.h"
-#include "vzclientsdk_lpdefine.h"
-#include "vzsdkpushhandle.h"
-#include "vzsdkdefines.h"
-#include "vzlprtcpsdk.h"
-#include "vzsdkservice.h"
-#include "vzmodulebase.h"
+#include "vzsdk/vzclientsdk_lpdefine.h"
+#include "vzsdk/vzsdkpushhandle.h"
+#include "vzsdk/vzsdkdefines.h"
+#include "vzsdk/vzlprtcpsdk.h"
+#include "vzsdk/vzsdkservice.h"
+#include "vzsdk/vzmodulebase.h"
 
 using namespace vzsdk;
 namespace vzsdk {

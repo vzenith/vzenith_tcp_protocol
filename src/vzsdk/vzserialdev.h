@@ -29,7 +29,7 @@
 
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/vzlprtcpsdk.h"
-#include "vzmodulebase.h"
+#include "vzsdk/vzmodulebase.h"
 
 using namespace vzsdk;
 
@@ -43,7 +43,7 @@ class VzSerialDev : public VZModuleBase {
 
     int SerialSend(uint32 serial_port, const unsigned char *data, unsigned size_data);
 
-    int SerialStop(uint32 serial_port);
+    int SerialStop();
 
 	void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
 };

@@ -28,7 +28,7 @@
 #define SRC_HSHA_SYNC_MODULE_BASE_H_
 
 #include "vzsdk/queuelayer.h"
-#include "vzsdkservice.h"
+#include "vzsdk/vzsdkservice.h"
 
 using namespace vzsdk;
 namespace vzsdk {

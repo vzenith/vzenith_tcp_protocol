@@ -28,8 +28,8 @@
 #define SRC_HSHA_SYNC_CONNECTDEV_H_
 
 #include "vzsdk/queuelayer.h"
-#include "vzsdkservice.h"
-#include "vzmodulebase.h"
+#include "vzsdk/vzsdkservice.h"
+#include "vzsdk/vzmodulebase.h"
 
 namespace vzsdk {
 class  VzsdkService;

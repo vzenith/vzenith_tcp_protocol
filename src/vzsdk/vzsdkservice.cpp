@@ -30,12 +30,12 @@
 #include "base/logging.h"
 #include "vzsdk/vzsdkbase.h"
 #include "vzsdk/commandanalysis.h"
-#include "vzconnectdev.h"
-#include "vzrecognition.h"
-#include "vzmaintendev.h"
-#include "vzwlistdev.h"
-#include "vzserialdev.h"
-#include "vziodev.h"
+#include "vzsdk/vzconnectdev.h"
+#include "vzsdk/vzrecognition.h"
+#include "vzsdk/vzmaintendev.h"
+#include "vzsdk/vzwlistdev.h"
+#include "vzsdk/vzserialdev.h"
+#include "vzsdk/vziodev.h"
 
 namespace vzsdk {
 
