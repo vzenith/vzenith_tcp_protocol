@@ -94,6 +94,8 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/base/stringutils.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/base/timeutils.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base/timeutils.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/base/vzfile.h
+	${CMAKE_CURRENT_SOURCE_DIR}/base/vzfile.cpp
 	${PLATFORM_STR_LIST}
 	
 	# event
@@ -198,6 +200,8 @@ SOURCE_GROUP(base FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/base/stringutils.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/base/timeutils.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base/timeutils.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/base/vzfile.h
+	${CMAKE_CURRENT_SOURCE_DIR}/base/vzfile.cpp
 	${PLATFORM_STR_LIST}
 	)
 
