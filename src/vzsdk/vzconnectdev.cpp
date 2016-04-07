@@ -1,6 +1,6 @@
 #include "VzConnectDev.h"
 #include "vzsdkdefines.h"
-#include "base\logging.h"
+#include "base/logging.h"
 
 vzsdk::VzConnectDev::VzConnectDev(VzsdkService* _service)
     : VZModuleBase(_service) {

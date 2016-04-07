@@ -28,7 +28,7 @@
 #define SRC_HSHA_COMMANDANALYSIS_H_
 
 #include <string>
-#include "json\json.h"
+#include "json/json.h"
 #include "vzclientsdk_lpdefine.h"
 #include "vzsdkdefines.h"
 
@@ -88,7 +88,7 @@ public:
   ~commandanalysis(void);
 
   static string GeneratCommonCmd(const char *command);
-  static Json::Value GeneratSerialStartCmd(uint32 serial_port);
+  static bool GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value);
   static Json::Value GeneratSerialStopCmd();
   static Json::Value GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen);
   static void GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& _json_value);

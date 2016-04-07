@@ -253,7 +253,8 @@ int __STDCALL VzLPRTcp_SerialStart(VzLPRTcpHandle handle, int nSerialPort,
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
         VzSerialDevPtr _serial_ptr = _serveres->GetSerialDev();
-        ret = _serial_ptr->SerialStart(nSerialPort, func, pUserData);
+        ret = _serial_ptr->SerialStart(nSerialPort);
+		_serial_ptr->SetSerialRecvCallBack(func, pUserData);
     }
     return ret;
 }
@@ -380,6 +381,7 @@ int __STDCALL VzLPRTcp_SetWlistInfoCallBack(VzLPRTcpHandle handle, VZLPRC_TCP_WL
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
         VzWlistDevPtr _wlist_ptr = _serveres->GetWlistDev();
+		_wlist_ptr->SetWlistRecvCallBack(func, pUserData);
     }
     return ret;
 }

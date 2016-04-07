@@ -1,7 +1,7 @@
 #include "VzRecognition.h"
-#include "vzsdk\vzsdkdefines.h"
+#include "vzsdk/vzsdkdefines.h"
 #include "commandanalysis.h"
-#include "base\logging.h"
+#include "base/logging.h"
 #include "vzsdkpushhandle.h"
 
 vzsdk::VzRecognition::VzRecognition(VzsdkService* service)
@@ -157,4 +157,9 @@ int vzsdk::VzRecognition::ReciveIvsResult(uint32 session_id,
         return DEFAULT_RESULT_TIMEOUT;
     }
     return REQ_SUCCEED;
+}
+
+void vzsdk::VzRecognition::ChangeConnStatue()
+{
+  //ChangeConnPushHandle::Ptr change_conn_push(new ChangeConnPushHandle(""))
 }

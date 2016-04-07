@@ -1,5 +1,5 @@
 #include "vzmodulebase.h"
-#include "base\logging.h"
+#include "base/logging.h"
 
 VZModuleBase::VZModuleBase(VzsdkService* sdk_service)
     : sdk_service_(sdk_service) {

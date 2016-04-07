@@ -27,7 +27,7 @@
 #ifndef SRC_HSHA_RECONGINITION_H_
 #define SRC_HSHA_RECONGINITION_H_
 
-#include "vzsdk\queuelayer.h"
+#include "vzsdk/queuelayer.h"
 #include "vzclientsdk_lpdefine.h"
 #include "vzsdkpushhandle.h"
 #include "vzsdkdefines.h"
@@ -58,7 +58,8 @@ class VzRecognition : public VZModuleBase {
                         IvsFormat format,
                         bool enable_img,
                         IvsImgType img_type);
-
+    
+    void ChangeConnStatue();
   private:
     vzsdk::IvsPushHandle::Ptr ivs_handle_;
 };

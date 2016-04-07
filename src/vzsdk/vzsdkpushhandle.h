@@ -83,6 +83,19 @@ class SerialPushHandle : public PushHandle {
     void *user_data_;
 };
 
+//------------------------------------------------------------------------------
+class ChangeConnPushHandle : public PushHandle {
+public:
+  ChangeConnPushHandle(const std::string &cmd_key);
+  virtual ~ChangeConnPushHandle();
+  virtual bool HandleMessageData(ResponseData *response);
+
+  void SetSessionID(int session_id);
+
+protected:
+  int session_id_;
+  Socket::ConnState conn_state_;
+};
 }
 
 #endif // SRC_VZSDK_VZSDKPUSHMANAGER_H_

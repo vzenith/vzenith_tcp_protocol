@@ -1,5 +1,5 @@
 #include "VzSerialDev.h"
-#include "base\logging.h"
+#include "base/logging.h"
 #include "vzsdkdefines.h"
 #include "vzsdkbase.h"
 #include "commandanalysis.h"
@@ -13,9 +13,12 @@ vzsdk::VzSerialDev::VzSerialDev(VzsdkService* _service)
 vzsdk::VzSerialDev::~VzSerialDev() {
 }
 
-int VzSerialDev::SerialStart(uint32 serial_port, VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data) {
+int VzSerialDev::SerialStart(uint32 serial_port) {
     Json::Value req_json;
-    req_json = commandanalysis::GeneratSerialStartCmd(serial_port);
+	if (!commandanalysis::GeneratSerialStartCmd(serial_port, req_json))
+	{
+		return REQ_FAILED;
+	}
 
     Message::Ptr msg = SyncProcessReqTask(req_json);
     if (!msg || msg->phandler == NULL) {
@@ -53,7 +56,7 @@ int VzSerialDev::SerialSend(uint32 serial_port, const unsigned char *data, unsig
 
 int VzSerialDev::SerialStop(uint32 serial_port) {
     Json::Value req_json;
-    req_json = commandanalysis::GeneratSerialStartCmd(serial_port);
+	req_json = commandanalysis::GeneratSerialStopCmd();
 
     Message::Ptr msg = SyncProcessReqTask(req_json);
     if (!msg || msg->phandler == NULL) {
@@ -78,6 +81,7 @@ int VzSerialDev::SerialStop(uint32 serial_port) {
 }
 
 void VzSerialDev::SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data) {
-	static_cast<SerialPushHandle*>(serial_handle_.get())->SetSerialRecvCallBack(func, user_data);
-	sdk_service_->AddPushHandle(serial_handle_);
+	vzsdk::SerialPushHandle::Ptr serial_handle(new SerialPushHandle("ttransmission"));
+	static_cast<SerialPushHandle*>(serial_handle.get())->SetSerialRecvCallBack(func, user_data);
+	sdk_service->AddPushHandle(serial_handle);
 }

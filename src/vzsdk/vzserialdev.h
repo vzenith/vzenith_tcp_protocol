@@ -39,16 +39,16 @@ class VzSerialDev : public VZModuleBase {
     VzSerialDev(VzsdkService* _service);
     ~VzSerialDev();
 
-    int SerialStart(uint32 serial_port, VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
+    int SerialStart(uint32 serial_port);
 
     int SerialSend(uint32 serial_port, const unsigned char *data, unsigned size_data);
 
     int SerialStop(uint32 serial_port);
 
-    void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
+	void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
 
 private:
-	vzsdk::SerialPushHandle::Ptr serial_handle_;
+    
 };
 }
 

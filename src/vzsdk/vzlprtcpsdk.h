@@ -148,7 +148,7 @@ typedef void (__STDCALL *VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK)(int nSerialHandle,
 *  @param  [IN] nSerialPort 指定使用设备的串口序号：0表示第一个串口，1表示第二个串口
 *  @param  [IN] func 接收数据的回调函数
 *  @param  [IN] pUserData 接收数据回调函数的上下文
-*  @return 返回透明通道句柄，0表示失败
+*  @return 0表示成功，其他值表示失败
 *  @ingroup group_device
 */
 VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SerialStart(VzLPRTcpHandle handle, int nSerialPort,

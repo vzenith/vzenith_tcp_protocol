@@ -28,7 +28,7 @@
 #define SRC_HSHA_TCPDEVICEMANAGE_H_
 
 #include <map>
-#include "vzsdk\vzsdkservice.h"
+#include "vzsdk/vzsdkservice.h"
 
 using namespace vzsdk;
 

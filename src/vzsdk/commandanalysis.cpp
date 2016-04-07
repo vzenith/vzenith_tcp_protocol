@@ -23,24 +23,29 @@ string commandanalysis::GeneratCommonCmd( const char *command ) {
     return cmd;
 }
 
-Json::Value commandanalysis::GeneratSerialStartCmd(uint32 serial_port) {
-    Json::Value root;
+bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value){
+	bool ret = false;
 
-    if (serial_port != 0 || serial_port != 1) {
-        return root;
+    if (serial_port == 0 || serial_port == 1) 
+	{
+		_json_value["cmd"]		= "ttransmission";
+		_json_value["subcmd"]	= "init";
+		_json_value["data"]		= "all";
+		_json_value["datalen"]	= 3;
+
+		//if (serial_port == 0) {
+		//	_json_value["data"] = "rs485-1";
+		//	_json_value["datalen"] = strlen("rs485-1");
+		//}
+		//else if (serial_port == 1) {
+		//	_json_value["data"] = "rs485-2";
+		//	_json_value["datalen"] = strlen("rs485-2");
+		//}
+
+		ret = true;
     }
 
-    root["cmd"]		= "ttransmission";
-    root["subcmd"]  = "init";
-    if (serial_port == 0) {
-        root["data"]	= "rs485-1";
-        root["datalen"] = strlen("rs485-1");
-    } else if (serial_port == 1) {
-        root["data"] = "rs485-2";
-        root["datalen"] = strlen("rs485-2");
-    }
-
-    return root;
+	return ret;
 }
 
 Json::Value commandanalysis::GeneratSerialStopCmd() {
