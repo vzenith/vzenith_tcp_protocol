@@ -55,6 +55,9 @@ bool PushManagerTask::HandleMessage(Message *msg) {
     if(msg->message_id == 0
             && stanza->stanza_type() == RES_STANZA_EVENT) {
         return HandleResponse(msg);
+    } else if ((stanza->stanza_type() == RES_DISCONNECTED_EVENT_FAILURE
+                || stanza->stanza_type() == RES_CONNECTED_EVENT)) {
+        HandleChangeConn(msg);
     }
     return false;
 }
@@ -65,6 +68,15 @@ bool PushManagerTask::HandleResponse(Message *msg) {
     const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
     PushHandleKeys::iterator iter = push_handle_keys_.find(res_cmd);
     if(iter != push_handle_keys_.end()) {
+        task_thread_->Post(this, task_id_, msg->pdata);
+        return true;
+    }
+    return false;
+}
+
+bool PushManagerTask::HandleChangeConn(Message *msg) {
+    PushHandleKeys::iterator iter = push_handle_keys_.find("change_conn_status");
+    if (iter != push_handle_keys_.end()) {
         task_thread_->Post(this, task_id_, msg->pdata);
         return true;
     }

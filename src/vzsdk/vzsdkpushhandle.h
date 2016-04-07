@@ -90,11 +90,14 @@ public:
   virtual ~ChangeConnPushHandle();
   virtual bool HandleMessageData(ResponseData *response);
 
+  void SetConnCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void* user_data);
   void SetSessionID(int session_id);
 
 protected:
   int session_id_;
   Socket::ConnState conn_state_;
+  VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+  void* user_data_;
 };
 }
 

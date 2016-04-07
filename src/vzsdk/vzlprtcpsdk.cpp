@@ -11,8 +11,8 @@
 #include "vzserialdev.h"
 #include "vzwlistdev.h"
 #include "vziodev.h"
-
 #include <string.h>
+#include "base/socket.h"
 
 using namespace std;
 using namespace vzsdk;
@@ -136,8 +136,8 @@ int __STDCALL VzLPRTcp_IsConnected(VzLPRTcpHandle handle, BYTE *pStatus) {
 
   VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
   if (_serveres) {
-    Socket::ConnState _conn_state = _serveres->GetConnectDev()->GetConnState();
-    *pStatus = (_conn_state == Socket::ConnState::CS_CONNECTED) ? true : false;
+    int _conn_state = _serveres->GetConnectDev()->GetConnState();
+    *pStatus = (_conn_state == 2) ? true : false;
     ret = _vzsdk_success;
   }
   SetLastError(ret, VZ_LPRC_LASTERROR_INVALID_PSTATUS);
@@ -227,6 +227,13 @@ const char* __STDCALL VzLPRTcp_GetIP(VzLPRTcpHandle handle) {
     }
     return NULL;
 }
+
+int __STDCALL VzLPRTcp_SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData)
+{
+
+  return _vzsdk_success;
+}
+
 
 int __STDCALL VzLPRTcp_LoadImageById(VzLPRTcpHandle handle, int id, void *pdata, int* size) {
   int ret = _vzsdk_failed;

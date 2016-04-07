@@ -46,9 +46,6 @@ class VzSerialDev : public VZModuleBase {
     int SerialStop(uint32 serial_port);
 
 	void SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data);
-
-private:
-    
 };
 }
 

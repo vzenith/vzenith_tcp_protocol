@@ -36,12 +36,12 @@ bool vzsdk::VZModuleBase::PostReqTask(const Json::Value &req_json) {
         return false;
     }
 
-    Task::Ptr req_task(new ReqTask(sdk_service_->GetQueueLayer().get(),
-                                   DEFAULT_TIMEOUT,
-                                   session_id,
-                                   req_json));
+    Task::Ptr req_push_task(new ReqPushTask(sdk_service_->GetQueueLayer().get(),
+                                            DEFAULT_TIMEOUT,
+                                            session_id,
+                                            req_json));
 
-    req_task->PostTask();
+    req_push_task->SyncProcessTask();
     return true;
 }
 

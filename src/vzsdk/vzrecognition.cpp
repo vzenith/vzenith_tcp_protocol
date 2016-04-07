@@ -158,8 +158,3 @@ int vzsdk::VzRecognition::ReciveIvsResult(uint32 session_id,
     }
     return REQ_SUCCEED;
 }
-
-void vzsdk::VzRecognition::ChangeConnStatue()
-{
-  //ChangeConnPushHandle::Ptr change_conn_push(new ChangeConnPushHandle(""))
-}

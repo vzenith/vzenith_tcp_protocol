@@ -65,6 +65,12 @@ VZ_LPRC_RESULT_TYPE IvsPushHandle::GetResultTypeFromTrigBits(unsigned uBitsTrigT
 }
 
 bool IvsPushHandle::HandleMessageData(ResponseData *response) {
+  std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
+  if (!(response->session_id() == this->session_id_
+            && response->stanza_type() == RES_STANZA_EVENT
+            && res_cmd == cmd_key()))
+      return false;
+
     LOG(LS_INFO) << response->res_json().toStyledString();
 
     Json::Value _value = response->res_json();
@@ -83,22 +89,22 @@ bool IvsPushHandle::HandleMessageData(ResponseData *response) {
 
     if (result_callback_) {
         result_callback_(session_id_, result_userdata_
-                        , &plate_result_, 1
-                        , GetResultTypeFromTrigBits(plate_result_.uBitsTrigType)
-                        , pImage, nFullImgSize
-                        , pClipImage, nClipImgSize);
+                         , &plate_result_, 1
+                         , GetResultTypeFromTrigBits(plate_result_.uBitsTrigType)
+                         , pImage, nFullImgSize
+                         , pClipImage, nClipImgSize);
     }
     return true;
 }
 
 void IvsPushHandle::SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback
-                                        , void* result_userdata) {
+                                     , void* result_userdata) {
     result_callback_ = result_callback;
     result_userdata_ = result_userdata;
 }
 
 void IvsPushHandle::SetSessionID(int session_id) {
-  session_id_ = session_id;
+    session_id_ = session_id;
 }
 
 //------------------------------------------------------------------------------
@@ -145,48 +151,44 @@ bool SerialPushHandle::HandleMessageData(ResponseData *response) {
 }
 
 void SerialPushHandle::SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func
-                        , void *user_data) {
+        , void *user_data) {
     func_ = func;
     user_data_ = user_data;
 }
 
 ChangeConnPushHandle::ChangeConnPushHandle(const std::string & cmd_key)
-  : PushHandle(cmd_key)
-{
+    : PushHandle(cmd_key) {
 
 }
 
-ChangeConnPushHandle::~ChangeConnPushHandle()
-{
+ChangeConnPushHandle::~ChangeConnPushHandle() {
 
 }
 
-bool ChangeConnPushHandle::HandleMessageData(ResponseData *response)
-{
-  int stanza_type = response->stanza_type();
-  if (response->session_id() == session_id_)
-  {
-    if (stanza_type == RES_CONNECTED_EVENT)
-      conn_state_ = Socket::CS_CONNECTED;
-    else if (stanza_type == RES_DISCONNECTED_EVENT_FAILURE)
-      conn_state_ = Socket::CS_CONNECTED;
-  }
-//   Stanza *stanza = static_cast<Stanza *>(response->pdata.get());
-//   if (response->session_id() == req_data_->session_id()
-//     && stanza->stanza_type() == RES_STANZA_EVENT) {
-//     return HandleResponse(msg);
-//   }
-//   if (msg->message_id == task_id_
-//     && stanza->session_id() == req_data_->session_id()) {
-//     task_thread_->Post(this, task_id_, msg->pdata);
-//     return true;
-//   }
-  return false;
+bool ChangeConnPushHandle::HandleMessageData(ResponseData *response) {
+    int stanza_type = response->stanza_type();
+    VZ_LPRC_COMMON_NOTIFY notify = VZ_LPRC_NO_ERR;
+    std::string detail = "";
+    if (response->session_id() == session_id_) {
+        if (stanza_type == RES_CONNECTED_EVENT)
+            conn_state_ = Socket::CS_CONNECTED;
+        else if (stanza_type == RES_DISCONNECTED_EVENT_FAILURE) {
+            conn_state_ = Socket::CS_CONNECTED;
+        }
+        if (conn_callback_) {
+            conn_callback_(session_id_, user_data_, notify, detail.c_str());
+        }
+    }
+    return false;
 }
 
-void ChangeConnPushHandle::SetSessionID(int session_id)
-{
-  session_id_ = session_id;
+void ChangeConnPushHandle::SetConnCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void* user_data) {
+    conn_callback_ = func;
+    user_data_ = user_data;
+}
+
+void ChangeConnPushHandle::SetSessionID(int session_id) {
+    session_id_ = session_id;
 }
 
 }

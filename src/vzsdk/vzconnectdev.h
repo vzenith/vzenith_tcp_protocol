@@ -46,13 +46,17 @@ class VzConnectDev : public VZModuleBase {
     int GetSessionID();
     Socket::ConnState GetConnState();
 
+    void SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                 , void *pUserData);
+
   protected:
     int ReConnectServer();
+    void ChangeConn();
 
   private:
-    std::string device_ip;
-    Task::Ptr connect_task;
-    ReqConnectDataPtr req_connect_data_ptr;
+    Task::Ptr connect_task_;
+    ReqConnectDataPtr req_connect_data_ptr_;
+    ChangeConnPushHandle::Ptr change_conn_pushhandle;
 };
 }
 

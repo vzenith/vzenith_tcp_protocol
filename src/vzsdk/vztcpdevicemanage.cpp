@@ -4,7 +4,9 @@
 const int _c_success = 0;
 const int _c_failed = -1;
 
-vzsdk::VzTcpDeviceManage::VzTcpDeviceManage() {
+vzsdk::VzTcpDeviceManage::VzTcpDeviceManage() 
+            : conn_callback_(NULL)
+            , user_data_(NULL){
 }
 
 /************************************************************************/
@@ -90,6 +92,7 @@ int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& ip, const int 
     sdk_service->Start();
     int session_id = sdk_service->GetConnectDev()->ConnectServer(ip, port);
     if (session_id != SESSION_ID_INVALUE) {
+        sdk_service->SetCommonNotifyCallBack(conn_callback_, user_data_);;
         vzsdk_service_map_.insert(std::make_pair(session_id, sdk_service));
     }
     return session_id;
@@ -105,10 +108,24 @@ bool vzsdk::VzTcpDeviceManage::CloseService(int session_id) {
     if (!ExistService(session_id))
         return false;
 
-    VzsdkServicesPtr sdk_service = GetService(session_id);
-    if (sdk_service) {
-        sdk_service->Stop();
-        RemoveService(session_id);
-    }
+    GetService(session_id)->Stop();
+    RemoveService(session_id);
     return true;
+}
+
+void vzsdk::VzTcpDeviceManage::SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+        , void *user_Data_) {
+    conn_callback_ = func;
+    user_data_ = user_Data_;
+    for (VzsdkServicesMap::iterator it = vzsdk_service_map_.begin();
+            it != vzsdk_service_map_.end();
+            ++it) {
+        it->second->SetCommonNotifyCallBack(func, user_Data_);
+        it->second->GetConnectDev()->SetCommonNotifyCallBack(func, user_Data_);
+    }
+}
+
+void vzsdk::VzTcpDeviceManage::GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *user_data) {
+    func = conn_callback_;
+    user_data = user_data_;
 }

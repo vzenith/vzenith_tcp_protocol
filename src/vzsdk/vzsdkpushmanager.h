@@ -48,6 +48,7 @@ class PushManagerTask : public Task {
     void RemovePushHandle(PushHandle::Ptr handle);
   private:
     bool HandleResponse(Message *msg);
+    bool HandleChangeConn(Message *msg);
     void ProcessPushEvent(Message *msg);
   private:
     static const uint32 PUSH_EVENT_STANZA = 1;

@@ -51,11 +51,20 @@ class VzTcpDeviceManage {
     bool ExistService(int session_id);
     bool CloseService(int session_id);
 
+    void SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                    , void *pUserData);
+
+    void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                    , void *pUserData);
   protected:
     bool RemoveService(int session_id);
 
   private:
     VzsdkServicesMap vzsdk_service_map_;
+
+    //针对所有设备
+    VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+    void* user_data_;
 };
 }
 

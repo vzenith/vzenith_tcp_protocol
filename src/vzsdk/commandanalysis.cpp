@@ -1,6 +1,8 @@
 #include "commandanalysis.h"
+#include <stdio.h>
 #ifndef _WIN32
 #include <string.h>
+#include <stdio.h>
 #endif
 #include "base/base64.h"
 #include "vzsdkbase.h"
@@ -23,29 +25,28 @@ string commandanalysis::GeneratCommonCmd( const char *command ) {
     return cmd;
 }
 
-bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value){
-	bool ret = false;
+bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value) {
+    bool ret = false;
 
-    if (serial_port == 0 || serial_port == 1) 
-	{
-		_json_value["cmd"]		= "ttransmission";
-		_json_value["subcmd"]	= "init";
-		_json_value["data"]		= "all";
-		_json_value["datalen"]	= 3;
+    if (serial_port == 0 || serial_port == 1) {
+        _json_value["cmd"]		= "ttransmission";
+        _json_value["subcmd"]	= "init";
+        _json_value["data"]		= "all";
+        _json_value["datalen"]	= 3;
 
-		//if (serial_port == 0) {
-		//	_json_value["data"] = "rs485-1";
-		//	_json_value["datalen"] = strlen("rs485-1");
-		//}
-		//else if (serial_port == 1) {
-		//	_json_value["data"] = "rs485-2";
-		//	_json_value["datalen"] = strlen("rs485-2");
-		//}
+        //if (serial_port == 0) {
+        //	_json_value["data"] = "rs485-1";
+        //	_json_value["datalen"] = strlen("rs485-1");
+        //}
+        //else if (serial_port == 1) {
+        //	_json_value["data"] = "rs485-2";
+        //	_json_value["datalen"] = strlen("rs485-2");
+        //}
 
-		ret = true;
+        ret = true;
     }
 
-	return ret;
+    return ret;
 }
 
 Json::Value commandanalysis::GeneratSerialStopCmd() {

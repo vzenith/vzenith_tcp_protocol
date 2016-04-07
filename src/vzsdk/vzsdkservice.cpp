@@ -46,8 +46,8 @@ namespace vzsdk {
 /************************************************************************/
 VzsdkService::VzsdkService()
     : push_manager_task_(NULL)
-    , connect_dev_(NULL) {
-
+    , conn_callback_(NULL)
+    , user_data_(NULL){
 }
 
 VzsdkService::~VzsdkService() {
@@ -91,9 +91,21 @@ bool VzsdkService::Start() {
 // 说明:     停止服务
 /************************************************************************/
 bool VzsdkService::Stop() {
-    //GetConnectDev()->DisconnectServer();
-
+    if (connect_dev_)
+      connect_dev_->DisconnectServer();
     return queue_layer_->Stop();
+}
+
+void VzsdkService::SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData)
+{
+  conn_callback_ = func;
+  user_data_ = pUserData;
+}
+
+void VzsdkService::GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *user_data)
+{
+  func = conn_callback_;
+  user_data = user_data_;
 }
 
 void VzsdkService::initModule() {

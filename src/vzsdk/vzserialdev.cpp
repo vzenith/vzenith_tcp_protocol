@@ -83,5 +83,5 @@ int VzSerialDev::SerialStop(uint32 serial_port) {
 void VzSerialDev::SetSerialRecvCallBack(VZDEV_TCP_SERIAL_RECV_DATA_CALLBACK func, void *user_data) {
 	vzsdk::SerialPushHandle::Ptr serial_handle(new SerialPushHandle("ttransmission"));
 	static_cast<SerialPushHandle*>(serial_handle.get())->SetSerialRecvCallBack(func, user_data);
-	sdk_service->AddPushHandle(serial_handle);
+	sdk_service_->AddPushHandle(serial_handle);
 }

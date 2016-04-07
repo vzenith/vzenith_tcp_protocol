@@ -4,11 +4,11 @@
 
 /* common constants */
 #ifndef  SUCCESS
-	#define SUCCESS         0
+#define SUCCESS         0
 #endif
 
 #ifndef FAILURE
-	#define FAILURE        -1
+#define FAILURE        -1
 #endif
 
 #define VZ_API_SUCCESS			0
@@ -65,48 +65,43 @@ ERROR define
 #define  E_UNDEFINED   14
 
 //实时流数据类型
-typedef enum
-{
-	vHeadData = 1,	//视频编码头数据
-	vStreamData,	//
-	aStreamData		//	
-}RealDataType;
+typedef enum {
+    vHeadData = 1,	//视频编码头数据
+    vStreamData,	//
+    aStreamData		//
+} RealDataType;
 
 //解码数据的作用模式
-typedef enum VZC_DEC_DATA_MODE
-{
-	VZC_DEC_DATA_INSTANCE,	//实际解码数据，并将绘制到内部绘图（默认）。用户不能修改图像，否则影响图像质量
-	VZC_DEC_DATA_REFERENCE,	//拷贝解码数据，如果用户修改了图像，将显示到内部绘图。
-	VZC_DEC_DATA_COPY,		//拷贝解码数据，如果用户修改了图像，但不显示到内部绘图。
+typedef enum VZC_DEC_DATA_MODE {
+    VZC_DEC_DATA_INSTANCE,	//实际解码数据，并将绘制到内部绘图（默认）。用户不能修改图像，否则影响图像质量
+    VZC_DEC_DATA_REFERENCE,	//拷贝解码数据，如果用户修改了图像，将显示到内部绘图。
+    VZC_DEC_DATA_COPY,		//拷贝解码数据，如果用户修改了图像，但不显示到内部绘图。
 }
 VZC_DEC_DATA_MODE;
 
 /**YUV420P的帧结构体*/
-typedef struct VzYUV420P
-{
-	unsigned char *pY;
-	unsigned char *pU;
-	unsigned char *pV;
-	int widthStepY;
-	int widthStepU;
-	int widthStepV;
-	int width;
-	int height;
+typedef struct VzYUV420P {
+    unsigned char *pY;
+    unsigned char *pU;
+    unsigned char *pV;
+    int widthStepY;
+    int widthStepU;
+    int widthStepV;
+    int width;
+    int height;
 }
 VzYUV420P;
 
 /**带时间、序列号信息的视频帧*/
-typedef struct VzFrameBuffer
-{
-	VzYUV420P yuv;
-	unsigned int uTimeStamp;	//当前帧的时间参数
-	unsigned int uSerialNum;    //当前帧的编号
+typedef struct VzFrameBuffer {
+    VzYUV420P yuv;
+    unsigned int uTimeStamp;	//当前帧的时间参数
+    unsigned int uSerialNum;    //当前帧的编号
 }
 VzFrameBuffer;
 
 /**分解时间*/
-typedef struct
-{
+typedef struct {
     unsigned char   bdt_sec;    /**<秒，取值范围[0,59]*/
     unsigned char   bdt_min;    /**<分，取值范围[0,59]*/
     unsigned char   bdt_hour;   /**<时，取值范围[0,23]*/
@@ -118,8 +113,8 @@ typedef struct
 }
 VzBDTime;   //broken-down time
 
-typedef enum{
-	VZC_WATCHDOG_LOG
+typedef enum {
+    VZC_WATCHDOG_LOG
 }
 VZC_LogType;
 

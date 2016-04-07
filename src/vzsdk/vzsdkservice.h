@@ -58,6 +58,12 @@ class VzsdkService : public noncopyable {
     bool Start(); //初始化
     bool Stop();  //停止服务
 
+    void SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                          , void *pUserData);
+
+    void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+                                          , void *pUserData);
+
   protected:
     void initModule();
 
@@ -73,6 +79,9 @@ class VzsdkService : public noncopyable {
     VzWlistDevPtr whist_dev_;
     VzSerialDevPtr serial_dev_;
     VzIODevPtr io_dev_;
+
+    VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
+    void* user_data_;
 };
 }
 

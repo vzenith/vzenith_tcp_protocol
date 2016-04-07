@@ -59,7 +59,6 @@ class VzRecognition : public VZModuleBase {
                         bool enable_img,
                         IvsImgType img_type);
     
-    void ChangeConnStatue();
   private:
     vzsdk::IvsPushHandle::Ptr ivs_handle_;
 };
