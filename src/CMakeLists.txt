@@ -153,6 +153,7 @@ SET(SRC_LIST
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzclientsdk_lpdefine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdk.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdk.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdkdefine.h
 	)
 
 SOURCE_GROUP(base FILES
@@ -263,6 +264,7 @@ SOURCE_GROUP(vzsdk FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzclientsdk_lpdefine.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdk.h
 	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdk.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/vzsdk/vzlprtcpsdkdefine.h
 	)
 
 SET(CONVERALLS_SRC 
