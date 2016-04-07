@@ -27,7 +27,7 @@
 #ifndef SRC_VZSDK_VZSDKDEFINES_H_
 #define SRC_VZSDK_VZSDKDEFINES_H_
 
-#include "base\shared_ptr.h"
+#include "base/shared_ptr.h"
 
 namespace vzsdk {
 
