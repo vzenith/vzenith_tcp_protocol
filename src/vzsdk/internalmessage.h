@@ -32,6 +32,7 @@
 #include "base/socketaddress.h"
 #include "event/messagequeue.h"
 #include "json/json.h"
+#include "base/logging.h"
 
 namespace vzsdk {
 
@@ -39,11 +40,12 @@ enum ReqType {
 };
 
 enum StanzaType {
-  REQ_CONNECT_SERVER,
   REQ_DISCONNECT_SERVER,
+  REQ_CONNECT_SERVER,
   REQ_SEND_REQUESTION,
   REQ_ADD_PUSH_TASK,
   REQ_REMOVE_TASK_EVENT,
+  REQ_REMOVE_SESSION_EVENT,
 
   REQ_RES_BREAK = 0XFF,
 
@@ -53,8 +55,8 @@ enum StanzaType {
   RES_PUSH_SUCCEED,
   RES_CONNECTED_EVENT,
   RES_STANZA_EVENT,
-  RES_RECONNECT_SERVER,
-  RES_RECONNECT_EVENT
+  RES_RECONNECT_EVENT,
+  RES_RESUME_TASK_EVENT
 };
 
 const uint32 NULL_SESSION_ID = 0;
@@ -127,11 +129,30 @@ class ResponseData : public Stanza {
   ResponseData(uint32 session_id,
                const Json::Value &res_json,
                const std::string &res_data);
-  const Json::Value& res_json() const {
-    return res_json_;
+  Json::Value res_json() const {
+	  if (isLegJson()){
+		  return res_json_;
+	  }
+
+	  return Json::Value();
   }
+
+  Json::Value res_obj_json() const
+  {
+	  if (res_json_.isObject() ){
+		  return res_json_;
+	  }
+
+	  return Json::Value();
+  }
+
   const std::string& res_data() const {
     return res_data_;
+  }
+
+  bool isLegJson() const{
+	  int type = res_json_.type();
+	  return !(type <= Json::nullValue || type > Json::objectValue || res_json_.isNull());
   }
 
   bool isEmpty() const {

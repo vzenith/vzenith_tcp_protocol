@@ -29,6 +29,7 @@
 
 #include "vzsdk/queuelayer.h"
 #include "vzsdk/vzsdkservice.h"
+#include "base/criticalsection.h"
 
 using namespace vzsdk;
 namespace vzsdk {
@@ -39,13 +40,17 @@ class VZModuleBase {
     VZModuleBase(VzsdkService* sdk_service);
     virtual ~VZModuleBase();
 
-    Message::Ptr SyncProcessReqTask(const Json::Value &req_json);
+    Message::Ptr SyncProcessReqTask(const Json::Value &req_json, Thread *task_thread = NULL);
     bool PostReqTask(const Json::Value &req_json);
 
     int GetSessionID();
+    VzsdkService* getSDKService();
+
+	bool GetIsConn();
 
   protected:
     VzsdkService* sdk_service_;
+    CriticalSection crit_section;
 };
 }
 

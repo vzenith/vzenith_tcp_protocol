@@ -88,23 +88,25 @@ public:
   ~commandanalysis(void);
 
   static string GeneratCommonCmd(const char *command);
-  static bool GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value);
-  static void GeneratSerialStopCmd(Json::Value& _json_value);
-  static bool GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& _json_value);
-  static void GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& _json_value);
-  static void GeneratCancelOfflineCheckCmd(Json::Value& _json_value);
-  static void GeneratGetImageByIdCmd(int id, Json::Value& _json_value);
-  static void GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value& _json_value);
-  static void GeneratGetGPIOValueCmd(int gpio, Json::Value& _json_value);
-  static void GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& _json_value);
-  static void GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& _json_value);
-  static void GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& _json_value);
-  static void GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& _json_value);
-  static void GeneratTTransmissionCmd(const char *comm, const char* data, int datalen, Json::Value& _json_value);
-  static void GeneratOfflineCheckCmd(unsigned int interval, Json::Value& _json_value);
+  static bool GeneratSerialStartCmd(uint32 serial_port, Json::Value& json_value);
+  static void GeneratSerialStopCmd(Json::Value& json_value);
+  static bool GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& json_value);
+  static void GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& json_value);
+  static void GeneratCancelOfflineCheckCmd(Json::Value& json_value);
+  static void GeneratGetImageByIdCmd(int id, Json::Value& json_value);
+  static void GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value& json_value);
+  static void GeneratGetGPIOValueCmd(int gpio, Json::Value& json_value);
+  static bool GeneratSetIOOutputCmd(int gpio, int nOutput, Json::Value& _json_value);
+  static void GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& json_value);
+  static void GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& json_value);
+  static void GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& json_value);
+  static void GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& json_value);
+  static void GeneratTTransmissionCmd(const char *comm, const char* data, int datalen, Json::Value& json_value);
+  static void GeneratOfflineCheckCmd(unsigned int interval, Json::Value& json_value);
+  static void GeneraGetMaxRecordID(Json::Value&);
 
   //mainten
-  static void GeneratGetDeviceSN(int _session_id, Json::Value& _json_value);
+  static void GeneratGetDeviceSN(int _session_id, Json::Value& json_value);
 
   static std::string IvsFormatToString(int ivs_format);
   //Recongnition
@@ -112,15 +114,15 @@ public:
     , int _format
     , bool _enable_img
     , int _img_type
-    , Json::Value& _json_value);
+    , Json::Value& json_value);
 
-  static void GeneratForceTrigger(Json::Value& _json_value);
+  static void GeneratForceTrigger(Json::Value& json_value);
 
   static void ParseTTransmissionResponse(Json::Value &root, TTRANSMISSION_RESPONSE *value);
   static void ParseOfflineResponse(Json::Value &root, OFFLINE_RESPONSE *value);
   static void ParseRecordResponse(Json::Value &root, RECORD_RESPONSE *value);
   static void ParseGPIOResponse(Json::Value &root, GPIO_RESPONSE *value);
-  static void ParseMaxRecResponse(Json::Value &root, MAX_REC_RESPONSE *value);
+  static void ParseMaxRecResponse(Json::Value &root, MAX_REC_RESPONSE& value);
   static void ParseTimestampResponse(Json::Value &root, TIMESTAMP_RESPONSE *value);
   static void ParseWhiteListOperatorResponse(Json::Value &root, WHITE_LIST_OPERATOR_RESPONSE *value);
   static void ParseWhiteListRecordResponse(Json::Value &item, VZ_LPR_WLIST_VEHICLE &wlist);

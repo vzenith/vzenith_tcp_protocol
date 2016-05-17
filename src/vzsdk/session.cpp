@@ -34,7 +34,8 @@ uint32 Session::unequal_session_id_ = 0X01;
 
 Session::Session(Thread* async_thread, int _session_id)
     : async_thread_(async_thread),
-      connect_id_(0) {
+      connect_id_(0),
+	  ms_start_(0){
     if (_session_id == 0)
         session_id_ = ++unequal_session_id_;
     else
@@ -183,6 +184,7 @@ void Session::OnHandleInputPacket(const char *data,
                                   uint8 packet_type) {
     if(packet_type == PACKET_TYPE_HEARTBEAT) {
         ASSERT(data_size == 0);
+		ms_start_ = Time();
         // WriteHeartbeat();
     } else if (packet_type == PACKET_TYPE_JSON) {
         SignalSessionPacketEvent(shared_from_this(), data, data_size, packet_type);
@@ -198,7 +200,26 @@ void Session::WriteHeartbeat() {
 }
 
 void Session::AsyncWaitNextHeadrtbeatEvent() {
-    async_thread_->PostDelayed(DEFAULT_HEADBEAT_TIMEOUT, this);
+
+	bool timeout = false;
+
+	if (ms_start_ == 0)
+	{
+		ms_start_ = Time();
+	}
+	else
+	{
+		uint32 msCurrent = Time();
+		int cmsDelay = TimeDiff(msCurrent, ms_start_);
+		if (cmsDelay > DEFAULT_HEADBEAT_TIMEOUT * 3) {
+			timeout = true;
+			OnCloseEvent(async_socket_,0);
+		}
+	}
+
+	if (!timeout) {
+		async_thread_->PostDelayed(DEFAULT_HEADBEAT_TIMEOUT, this);
+	}
 }
 
 void Session::AsyncWrite(const char *data,

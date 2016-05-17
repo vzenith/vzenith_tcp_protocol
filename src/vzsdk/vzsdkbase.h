@@ -36,6 +36,8 @@ namespace vzsdk {
 #define JSON_REQ_CMD_FORCETRIGGER "trigger"
 #define JSON_REQ_CMD_GETSN "getsn"
 #define JSON_PUSH_CMD_IVSRESULT "ivsresult"
+#define  JSON_REQ_CMD_GETMAXRECORDID "get_max_rec_id"
+
 #define JSON_REQ_IVSRESULT_ENABLE "enable"
 #define JSON_REQ_IVSRESULT_FORMAT "format"
 #define JSON_REQ_IVSRESULT_ENABLE_IMAGE "image"

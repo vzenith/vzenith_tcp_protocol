@@ -104,7 +104,7 @@ class Session : public noncopyable,
   static const int HEADER_SIZE                  = 8;
   static const uint8 HEADER_V                   = 'V';
   static const uint8 HEADER_Z                   = 'Z';
-  static const int DEFAULT_HEADBEAT_TIMEOUT     = 5 * 1000;
+  static const int DEFAULT_HEADBEAT_TIMEOUT     = 2 * 1000;
 
   boost::shared_ptr<AsyncSocket> async_socket_;
   Thread *async_thread_;
@@ -116,6 +116,8 @@ class Session : public noncopyable,
 
   // The request id
   uint32 connect_id_;
+
+  uint32 ms_start_;
 };
 
 }

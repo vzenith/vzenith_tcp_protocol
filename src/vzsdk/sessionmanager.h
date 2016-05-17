@@ -54,6 +54,7 @@ class SessionManager : public noncopyable,
     bool Stop();
 
     Session::Ptr FindSession(uint32 session_id);
+    bool RemoveSession(uint32 session_id);
 
   private:
     bool InitAsyncThread();
@@ -61,12 +62,13 @@ class SessionManager : public noncopyable,
     void UnbindSessionSignal(Session::Ptr session);
 
     bool AddSession(Session::Ptr session);
-    bool RemoveSession(uint32 session_id);
+    
 
     void OnReconnectMessage(Message* msg);
     void OnConnectMessage(Message *msg);
     void OnDisconnectMessage(Message *msg);
     void OnRequestMessage(Message *msg);
+    void OnRemoveSessionMessage(Message *msg);
 
     void OnSessionPacketEvent(Session::Ptr session,
                               const char *data,

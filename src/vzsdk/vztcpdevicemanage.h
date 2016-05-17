@@ -29,6 +29,8 @@
 
 #include <map>
 #include "vzsdk/vzsdkservice.h"
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
 
 using namespace vzsdk;
 
@@ -56,11 +58,21 @@ class VzTcpDeviceManage {
 
     void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
                                     , void *pUserData);
+
+    bool Start();
+
+    bool Stop();
+
   protected:
     bool RemoveService(int session_id);
 
   private:
     VzsdkServicesMap vzsdk_service_map_;
+    QueueLayerPtr queue_layer_;
+    PushManagerTask *push_manager_task_;
+    ThreadPtr push_thread_;
+
+    CriticalSection crit_section_;
 
     //针对所有设备
     VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;

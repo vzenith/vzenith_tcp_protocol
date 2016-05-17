@@ -52,6 +52,7 @@ class PushHandle : public noncopyable
 };
 
 //------------------------------------------------------------------------------
+class VzRecognition;
 class IvsPushHandle : public PushHandle {
   public:
     IvsPushHandle(const std::string &cmd_key);
@@ -61,12 +62,11 @@ class IvsPushHandle : public PushHandle {
 
     void SetPlateCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback, void* result_userdata);
     void SetSessionID(int session_id);
-
+    void SetRecongnition(VzRecognition* reconition);
   private:
-    VZ_LPRC_RESULT_TYPE GetResultTypeFromTrigBits(unsigned uBitsTrigType);
     VZLPRC_TCP_PLATE_INFO_CALLBACK result_callback_;
     void* result_userdata_;
-
+    VzRecognition* recongnition_;
     int session_id_;
 };
 
@@ -84,10 +84,15 @@ class SerialPushHandle : public PushHandle {
 };
 
 //------------------------------------------------------------------------------
-class ChangeConnPushHandle : public PushHandle {
+class ChangeConnPushHandle : public PushHandle
+    , public sigslot::has_slots<>{
 public:
   ChangeConnPushHandle(const std::string &cmd_key);
   virtual ~ChangeConnPushHandle();
+
+  //signals
+  sigslot::signal1<int> SignalChangeConnStatus;
+   
   virtual bool HandleMessageData(ResponseData *response);
 
   void SetConnCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void* user_data);
@@ -98,6 +103,50 @@ protected:
   Socket::ConnState conn_state_;
   VZLPRC_TCP_COMMON_NOTIFY_CALLBACK conn_callback_;
   void* user_data_;
+};
+
+//-------------------------------------------------------------------------------
+class ResumePushHandle : public PushHandle
+                        , public sigslot::has_slots<>{
+public:
+    ResumePushHandle(const std::string& cmd_key);
+    virtual ~ResumePushHandle();
+
+    virtual bool HandleMessageData(ResponseData *response);
+
+    void DisConnecting();
+    void AddRecordID(int record_id);
+    void SetSessionID(int session_id);
+    void SetQueueLayer(QueueLayer* queue_layer);
+
+    void SetStartMaxRecordID(int max_record_id);
+    void SetCurMaxRecordID(int cur_id);
+
+    void SetCallBack(VZLPRC_TCP_PLATE_INFO_CALLBACK func, void* user_data);
+
+    //signals
+    sigslot::signal0<> SignalGetResumeInfo;
+
+    //slots
+    void SlotChangeConnStatus(int);
+
+protected:
+    bool HandleResponse(ResponseData *response);
+    void PostResumeReq();
+
+protected:
+    CriticalSection cirtical_section_;
+    uint32 session_id_;
+    std::set<int> recv_record_id_set_;
+    int max_record_id_;
+    int cur_max_record_id_;
+    VzRecognition* recognition_;
+    bool enable_getrecord_;
+
+    VZLPRC_TCP_PLATE_INFO_CALLBACK plate_func_;
+    void* user_data_;
+    bool enable_image_;
+    QueueLayer* queue_layer_;
 };
 }
 

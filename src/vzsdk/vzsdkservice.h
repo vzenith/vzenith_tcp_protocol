@@ -34,6 +34,7 @@
 #include "vzsdk/vzsdkdefines.h"
 #include "vzsdk/vzclientsdk_lpdefine.h"
 
+using namespace vzsdk;
 namespace vzsdk {
 class VzsdkService : public noncopyable {
   public:
@@ -64,12 +65,16 @@ class VzsdkService : public noncopyable {
     void GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
                                           , void *pUserData);
 
+    void SetParam(QueueLayerPtr queue_layer
+                    , PushManagerTask* push_manager_task
+                    , ThreadPtr push_thread);
+
   protected:
     void initModule();
 
   private:
     QueueLayerPtr queue_layer_;
-    PushManagerTask *push_manager_task_;
+    PushManagerTask* push_manager_task_;
     ThreadPtr push_thread_;
 
     VzConnectDevPtr connect_dev_;

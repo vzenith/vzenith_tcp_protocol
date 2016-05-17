@@ -26,13 +26,16 @@
 */
 #include "vzsdk/vztcpdevicemanage.h"
 #include "vzsdk/vzconnectdev.h"
+#include "vzsdkservice.h"
+#include "vzsdk/vzrecognition.h"
 
 const int _c_success = 0;
 const int _c_failed = -1;
 
 vzsdk::VzTcpDeviceManage::VzTcpDeviceManage() 
             : conn_callback_(NULL)
-            , user_data_(NULL){
+            , user_data_(NULL)
+            , push_manager_task_(NULL){
 }
 
 /************************************************************************/
@@ -41,6 +44,7 @@ vzsdk::VzTcpDeviceManage::VzTcpDeviceManage()
 // 说明:     析构，释放资源
 /************************************************************************/
 vzsdk::VzTcpDeviceManage::~VzTcpDeviceManage() {
+    Stop();
 }
 
 /************************************************************************/
@@ -50,6 +54,7 @@ vzsdk::VzTcpDeviceManage::~VzTcpDeviceManage() {
 // 说明:     是否存在session_id对应的服务
 /************************************************************************/
 bool vzsdk::VzTcpDeviceManage::ExistService(int session_id) {
+    CritScope crit_scope(&crit_section_);
     bool bExist = true;
     VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
     if (it == vzsdk_service_map_.end())
@@ -64,6 +69,7 @@ bool vzsdk::VzTcpDeviceManage::ExistService(int session_id) {
 // 说明:     根据session_id获取到服务
 /************************************************************************/
 const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(int session_id) {
+    CritScope crit_scope(&crit_section_);
     VzsdkServicesPtr vzsdk_service;
     if (ExistService(session_id)) {
         VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
@@ -73,6 +79,7 @@ const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(int session_id) {
 }
 
 const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(const std::string& ip) {
+    CritScope crit_scope(&crit_section_);
     VzsdkServicesPtr vzsdk_service;
     for (VzsdkServicesMap::iterator it = vzsdk_service_map_.begin();
             it != vzsdk_service_map_.end();
@@ -94,6 +101,7 @@ const VzsdkServicesPtr vzsdk::VzTcpDeviceManage::GetService(const std::string& i
 // 说明:     从映射表中移除服务
 /************************************************************************/
 bool vzsdk::VzTcpDeviceManage::RemoveService(int session_id) {
+    CritScope crit_scope(&crit_section_);
     bool bRet = false;
     VzsdkServicesMap::iterator it = vzsdk_service_map_.find(session_id);
     if (it != vzsdk_service_map_.end()) {
@@ -116,11 +124,14 @@ bool vzsdk::VzTcpDeviceManage::RemoveService(int session_id) {
 int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& ip, const int port, const std::string& user_name, const std::string& user_pwd) {
     VzsdkServicesPtr sdk_service(new VzsdkService);
     sdk_service->Start();
+    sdk_service->SetParam(queue_layer_, push_manager_task_, push_thread_);
     int session_id = sdk_service->GetConnectDev()->ConnectServer(ip, port);
     if (session_id != SESSION_ID_INVALUE) {
         sdk_service->SetCommonNotifyCallBack(conn_callback_, user_data_);;
         vzsdk_service_map_.insert(std::make_pair(session_id, sdk_service));
     }
+    else
+        sdk_service->Stop();
     return session_id;
 }
 
@@ -131,6 +142,7 @@ int vzsdk::VzTcpDeviceManage::CreateNewService(const std::string& ip, const int 
 // 说明:     关闭服务
 /************************************************************************/
 bool vzsdk::VzTcpDeviceManage::CloseService(int session_id) {
+    CritScope crit_scope(&crit_section_);
     if (!ExistService(session_id))
         return false;
 
@@ -154,4 +166,33 @@ void vzsdk::VzTcpDeviceManage::SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_
 void vzsdk::VzTcpDeviceManage::GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *user_data) {
     func = conn_callback_;
     user_data = user_data_;
+}
+
+bool vzsdk::VzTcpDeviceManage::Start()
+{
+    // Init logging system
+    LogMessage::LogTimestamps(true);
+    LogMessage::LogContext(vzsdk::LS_INFO);
+    LogMessage::LogThreads(true);
+    queue_layer_.reset(new QueueLayer());
+    ASSERT(push_manager_task_ == NULL);
+    push_thread_.reset(new Thread());
+    push_manager_task_ = new PushManagerTask(queue_layer_.get(),
+        push_thread_.get());
+
+    // For push manager life live
+    Task::Ptr push_task(push_manager_task_);
+    if (queue_layer_->Start()) {
+        push_manager_task_->SyncProcessTask();
+        return true;
+    }
+    return false;
+}
+
+bool vzsdk::VzTcpDeviceManage::Stop()
+{
+    vzsdk_service_map_.clear();
+    push_thread_->Stop();
+    queue_layer_->Stop();
+    return true;
 }

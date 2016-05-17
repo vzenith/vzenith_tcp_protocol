@@ -30,6 +30,8 @@
 #include "vzsdk/task.h"
 #include "base/logging.h"
 #include "vzsdk/vzsdkdefines.h"
+#include "base/criticalsection.h"
+
 
 namespace vzsdk {
 
@@ -71,6 +73,7 @@ QueueLayer::QueueLayer() {
 }
 
 QueueLayer::~QueueLayer() {
+    this->Stop();
 }
 
 void QueueLayer::OnMessage(Message *msg) {
@@ -98,6 +101,9 @@ void QueueLayer::OnReqMessage(Message *msg) {
     case REQ_ADD_PUSH_TASK:
         OnAddPushTaskMessage(msg);
         break;
+    case REQ_REMOVE_SESSION_EVENT:
+        RemoveSession(msg);
+        break;
     default:
         break;
     }
@@ -111,9 +117,10 @@ void QueueLayer::OnResMessage(Message *msg) {
     case RES_CONNECTED_EVENT:
     case RES_STANZA_EVENT:
     case RES_PUSH_SUCCEED:
+    case RES_RESUME_TASK_EVENT:
         OntranslateToSyncLayer(msg);
         break;
-    case RES_RECONNECT_SERVER:
+    case RES_RECONNECT_EVENT:
         ReConnect(msg);
         break;
     default:
@@ -124,6 +131,9 @@ void QueueLayer::OnResMessage(Message *msg) {
 void QueueLayer::OnRemoveTaskMessage(Message *msg) {
     RemoveTaskStanza *stanza_task =
         static_cast<RemoveTaskStanza *>(msg->pdata.get());
+    if (stanza_task == NULL)
+        return;
+
     Task::Ptr task = stanza_task->task();
     RemoveTask(task->task_id());
 }
@@ -177,6 +187,9 @@ bool QueueLayer::Start() {
 }
 
 bool QueueLayer::Stop() {
+    tasks_.clear();
+    if (session_manager_)
+        session_manager_->Stop();
     return true;
 }
 
@@ -190,16 +203,20 @@ bool QueueLayer::AddTask(Task::Ptr task) {
     return true;
 }
 
-bool QueueLayer::RemoveTask(uint32 task_id) {
+bool QueueLayer::RemoveTask(uint32 task_id) { 
+    CritScope crit_scope(&crit_section_);
+    if (tasks_.empty())
+        return false;
     std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task_id);
     if(iter == tasks_.end()) {
         return false;
-    }
+    }        
     tasks_.erase(iter);
     return true;
 }
 
 Task::Ptr QueueLayer::FindTask(uint32 task_id) {
+    CritScope crit_scope(&crit_section_);
     std::map<uint32, Task::Ptr>::iterator iter = tasks_.find(task_id);
     if(iter == tasks_.end()) {
         return Task::Ptr();
@@ -209,26 +226,23 @@ Task::Ptr QueueLayer::FindTask(uint32 task_id) {
 
 void QueueLayer::ReConnect(Message* msg) {
     ReqConnectData* _stanza = static_cast<ReqConnectData*>(msg->pdata.get());
-
     if (_stanza) {
-        vzsdk::Session::Ptr _session_ptr = session_manager_->FindSession(_stanza->session_id());
-        if (!_session_ptr || (_session_ptr && _session_ptr->GetState() == Socket::CS_CLOSED)) {
-            if (_session_ptr)
-                _session_ptr->Stop();
-            queue_thread_->Post(session_manager_.get(), REQ_CONNECT_SERVER, msg->pdata);
-            //Post(REQ_CONNECT_SERVER, msg->pdata);
-        }
-
-//     Task::Ptr connect_task(new ReConnectTask(this,
-//       vzsdk::FOREVER_TIMEOUT,
-//       *_stanza));
-        //Message::Ptr msg = connect_task->SyncProcessTask();
-        PostDelayed(1000, this, RES_RECONNECT_SERVER, msg->pdata);
+        _stanza->set_stanza_type(RES_RECONNECT_EVENT);
+        queue_thread_->Post(session_manager_.get(), RES_RECONNECT_EVENT, msg->pdata);
     }
 }
 
 void QueueLayer::PostDelayed(int cmsDelay, MessageHandler *phandler, uint32 id /*= 0*/, MessageData::Ptr pdata /*= MessageData::Ptr()*/) {
     queue_thread_->PostDelayed(cmsDelay, phandler, id, pdata);
+}
+
+void QueueLayer::RemoveSession(Message* msg)
+{
+    Stanza* stanza = static_cast<ReqConnectData*>(msg->pdata.get());
+    if (stanza)
+    {
+        session_manager_->RemoveSession(stanza->session_id());
+    }
 }
 
 }

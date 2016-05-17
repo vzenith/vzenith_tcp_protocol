@@ -32,6 +32,7 @@
 #include "event/thread.h"
 #include "base/scoped_ptr.h"
 #include "vzsdk/internalmessage.h"
+#include "vzsdk/vzlprtcpsdk.h"
 
 namespace vzsdk {
 
@@ -66,12 +67,13 @@ class Task : public MessageHandler,
   protected:
     Message::Ptr WaitTaskDone();
   protected:
-    static uint32 unequal_task_id_;
+    static int unequal_task_id_;
     QueueLayer *queue_layer_;
     uint32 timeout_;
     Thread *task_thread_;
     uint32 task_id_;
     MessageData::Ptr message_data_;
+    bool unwrap_thread_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +104,7 @@ class ReConnectTask : public Task {
 
     virtual void OnMessage(Message *msg);
     virtual uint32 message_type() {
-        return RES_RECONNECT_SERVER;
+        return RES_RECONNECT_EVENT;
     }
   private:
     ReqConnectData *req_reconnect_data_;
@@ -129,7 +131,8 @@ class ReqTask : public Task {
     ReqTask(QueueLayer *queue_layer,
             uint32 timeout,
             uint32 session_id,
-            const Json::Value &req_json);
+            const Json::Value &req_json
+            , Thread *task_thread = NULL);
     virtual ~ReqTask();
     virtual uint32 message_type() {
         return REQ_SEND_REQUESTION;
@@ -149,6 +152,7 @@ class ReqPushTask : public Task {
                 uint32 session_id,
                 const Json::Value &req_json);
     virtual ~ReqPushTask();
+    virtual void OnMessage(Message *msg);
     virtual uint32 message_type() {
         return REQ_SEND_REQUESTION;
     }

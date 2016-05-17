@@ -79,12 +79,15 @@ bool CheckDevice(VzLPRTcpHandle handle)
 
 int __STDCALL VzLPRTcp_Setup() {
     CritScope _critscope(&scoped_lock);
-
+    
     int _ret = _vzsdk_failed;
 
     vztcp_device_manage = new VzTcpDeviceManage;
     if (vztcp_device_manage)
+    {
         _ret = _vzsdk_success;
+        vztcp_device_manage->Start();
+    }
 
     return _ret;
 }
@@ -93,10 +96,15 @@ void __STDCALL VzLPRTcp_Cleanup() {
     CritScope _critscope(&scoped_lock);
 
     if (vztcp_device_manage)
+    {
+        vztcp_device_manage->Stop();
         delete vztcp_device_manage;
+        vztcp_device_manage = NULL;
+    }
 }
 
 VzLPRTcpHandle __STDCALL VzLPRTcp_Open(const char *pStrIP, WORD wPort, const char *pStrUserName, const char *pStrPassword) {
+    CritScope _critscope(&scoped_lock);
     int ret = _vzsdk_failed;
     ret = vztcp_device_manage->CreateNewService(pStrIP, wPort, pStrUserName, pStrPassword);
     SetLastError(ret, VZ_LPRC_LASTERROR_CREATE_FAILED);
@@ -183,7 +191,7 @@ int __STDCALL VzLPRTcp_SetPlateInfoCallBack(VzLPRTcpHandle handle
     if (_serveres) {
         VzRecognitionPtr _recongnition_ptr = _serveres->GetRecongintion();
         if (_recongnition_ptr) {
-            _recongnition_ptr->setReciveIvsResultCallback(func, pUserData, bEnableImage);
+			ret = _recongnition_ptr->SetReciveIvsResultCallback(func, pUserData, bEnableImage);
         }
     }
     return ret;
@@ -233,7 +241,10 @@ int __STDCALL VzLPRTcp_LoadRecordById(VzLPRTcpHandle handle, int id, TH_PlateRes
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
         VzRecognitionPtr _reconginition_ptr = _serveres->GetRecongintion();
-        ret = _reconginition_ptr->GetRecord(id, false, *pResult);
+        int full_size, clip_size;
+        ret = _reconginition_ptr->GetRecord(id, false, *pResult
+                                               , full_size, NULL
+                                               , clip_size, NULL);
     }
     else
       SetLastError(ret, VZ_LPRC_LASTERROR_INVALID_HANDLE);
@@ -254,10 +265,12 @@ const char* __STDCALL VzLPRTcp_GetIP(VzLPRTcpHandle handle) {
     return NULL;
 }
 
-int __STDCALL VzLPRTcp_SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData)
-{
-
-  return _vzsdk_success;
+int __STDCALL VzLPRTcp_SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData){
+    int ret = _vzsdk_failed;
+    if (!CheckManage())
+        return _vzsdk_failed;
+    vztcp_device_manage->SetCommonNotifyCallBack(func, pUserData);
+    return ret;
 }
 
 
@@ -330,6 +343,20 @@ int __STDCALL VzLPRTcp_SetIOOutputAuto(VzLPRTcpHandle handle, unsigned uChnId, i
     return ret;
 }
 
+int __STDCALL VzLPRTcp_SetIOOutput(VzLPRTcpHandle handle, unsigned uChnId, int nOutput)
+{
+	int ret = _vzsdk_failed;
+	if (!CheckDevice(handle))
+		return ret;
+
+	VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
+	if (_serveres) {
+		VzIODevPtr _io_ptr = _serveres->GetIODev();
+		ret = _io_ptr->SetIOOutput(uChnId, nOutput);
+	}
+	return ret;
+}
+
 int __STDCALL VzLPRTcp_GetGPIOValue(VzLPRTcpHandle handle, int gpioIn, int *value) {
   int ret = _vzsdk_failed;
   if (!CheckDevice(handle))
@@ -370,9 +397,9 @@ int __STDCALL VzLPRTcp_CancelOfflineCheck(VzLPRTcpHandle handle) {
 }
 
 int __STDCALL VzLPRTcp_ImportWlistVehicle(VzLPRTcpHandle handle, VZ_LPR_WLIST_VEHICLE *pWlist) {
-  int ret = _vzsdk_failed;
   if (!CheckDevice(handle))
-    return ret;
+      return _vzsdk_failed;
+  int ret = _vzsdk_failed;
 
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
@@ -383,9 +410,9 @@ int __STDCALL VzLPRTcp_ImportWlistVehicle(VzLPRTcpHandle handle, VZ_LPR_WLIST_VE
 }
 
 int __STDCALL VzLPRTcp_DeleteWlistVehicle(VzLPRTcpHandle handle, const char* plateCode) {
-  int ret = _vzsdk_failed;
   if (!CheckDevice(handle))
-    return ret;
+      return _vzsdk_failed;
+  int ret = _vzsdk_failed;
 
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
@@ -407,14 +434,31 @@ int __STDCALL VzLPRTcp_QueryWlistVehicle(VzLPRTcpHandle handle, const char* plat
     return ret;
 }
 
-int __STDCALL VzLPRTcp_SetWlistInfoCallBack(VzLPRTcpHandle handle, VZLPRC_TCP_WLIST_RECV_CALLBACK func, void *pUserData) {
-  int ret = _vzsdk_failed;
-  if (!CheckDevice(handle))
-    return ret;
+int __STDCALL VzLPRTcp_SetWlistInfoCallBack(VzLPRTcpHandle handle
+                                            , VZLPRC_TCP_WLIST_RECV_CALLBACK func
+                                            , void *pUserData) {
+    if (!CheckDevice(handle))
+        return _vzsdk_failed;
+    int ret = _vzsdk_failed;
     VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
     if (_serveres) {
         VzWlistDevPtr _wlist_ptr = _serveres->GetWlistDev();
 		_wlist_ptr->SetWlistRecvCallBack(func, pUserData);
+
+		ret = _vzsdk_success;
     }
     return ret;
+}
+
+int __STDCALL VzLPRTcp_SetOfflinePlateInfoCallBack(VzLPRTcpHandle handle
+                                                                    , VZLPRC_TCP_PLATE_INFO_CALLBACK func
+                                                                    , void *pUserData
+                                                                    , int bEnableImage){
+    if (!CheckDevice(handle))
+        return _vzsdk_failed;
+    int ret = _vzsdk_failed;
+    VzsdkServicesPtr _serveres = vztcp_device_manage->GetService(handle);
+    if (_serveres) {
+        _serveres->GetRecongintion()->SetResumRecordCallback(func, pUserData, bEnableImage);
+    }
 }
