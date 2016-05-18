@@ -41,6 +41,8 @@ class VzIODev : public VZModuleBase {
 
     int SetIOOutputAuto(unsigned chn_id, int duration);
 
+	int SetIOOutput(unsigned chn_id, int nOutput);
+
     int GetGPIOValue(int gpioIn, int *value);
 
     int SetOfflineCheck();

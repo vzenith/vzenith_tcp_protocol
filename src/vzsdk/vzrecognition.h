@@ -39,28 +39,54 @@ using namespace vzsdk;
 namespace vzsdk {
 class VzsdkService;
 
-class VzRecognition : public VZModuleBase {
+class VzRecognition : public VZModuleBase 
+                    , public sigslot::has_slots<>{
   public:
     explicit VzRecognition(VzsdkService* service);
     ~VzRecognition();
 
-    int GetRecord(int record_id, bool need_image, TH_PlateResult& oPlateResult);
+    int GetRecord(int record_id, bool need_image
+                    , TH_PlateResult& plate_result
+                    , int& full_size, void* fullimage
+                    , int& clip_size, void* clipimage);
     int GetImage(int image_id, char* image_ata, int& image_size);
     int ForceTrigger();
-    int setReciveIvsResultCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK func,
+    int SetReciveIvsResultCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK func,
                                    void *pUserData,
-                                   int bEnableImage);
+                                   int enable_Image);
 
-  private:
+    void SetResumRecordCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK func, void* user_data, bool EnableImage = true);
+    void GetResumRecodCallback(VZLPRC_TCP_PLATE_INFO_CALLBACK* func, void* user_data, bool& enable_image);
+    int GetMaxRecordID();
+	void addRecordID(int record_id);
+
+  protected:
+    void initConnect();
     int ReciveIvsResult(uint32 session_id,
                         PushHandle::Ptr handle,
                         bool enable_result,
                         IvsFormat format,
                         bool enable_img,
-                        IvsImgType img_type);
+                        IvsImgType img_type,
+                        bool sync_task = true);
     
-  private:
+ private:
+    int ResumeRecord();
+    
+    //slots
+    void SlotRecvChangeConnStatus(int);
+    void SlotDisConnecting();
+    void SlotRecvGetResumeInfo();
+
+private:
     vzsdk::IvsPushHandle::Ptr ivs_handle_;
+    bool enable_image_;
+    vzsdk::ResumePushHandle::Ptr resume_handle_;
+    bool resume_enable_image_;
+
+    //Ðø´«
+    VZLPRC_TCP_PLATE_INFO_CALLBACK resume_plate_func;
+    void* resume_user_data_;
 };
 }
 

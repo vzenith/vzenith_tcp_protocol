@@ -43,7 +43,7 @@ SessionManager::~SessionManager() {
 void SessionManager::OnMessage(Message *msg) {
     Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
     switch (stanza->stanza_type()) {
-    case  vzsdk::RES_RECONNECT_SERVER:
+    case  vzsdk::RES_RECONNECT_EVENT:
         OnReconnectMessage(msg);
         break;
     case vzsdk::REQ_CONNECT_SERVER:
@@ -54,6 +54,9 @@ void SessionManager::OnMessage(Message *msg) {
         break;
     case vzsdk::REQ_SEND_REQUESTION:
         OnRequestMessage(msg);
+        break;
+    case vzsdk::REQ_REMOVE_SESSION_EVENT:
+        OnRemoveSessionMessage(msg);
         break;
     default:
         ASSERT(false);
@@ -220,13 +223,20 @@ void SessionManager::OnSessionCloseEvent(
     vzsdk::Session::Ptr session,
     int code,
     uint32 connect_id) {
-    //
+    
+    MessageData::Ptr stanza_remove_session(new Stanza(REQ_REMOVE_SESSION_EVENT,
+        session->session_id()));
+    //queue_layer_->Post(connect_id, stanza_remove_session);
+    queue_layer_->Post(connect_id, stanza_remove_session);
+    LOG(LS_INFO) << "remote disconnected";
+
     MessageData::Ptr stanza(new Stanza(RES_DISCONNECTED_EVENT_FAILURE,
                                        session->session_id()));
     queue_layer_->Post(connect_id, stanza);
     LOG(LS_INFO) << "remote disconnected";
-    bool remove_res = RemoveSession(session->session_id());
-    ASSERT(remove_res);
+
+//     bool remove_res = RemoveSession(session->session_id());
+//     ASSERT(remove_res);
 }
 
 const char *SessionManager::FindEndString(const char *data, uint32 data_size) {
@@ -239,14 +249,27 @@ const char *SessionManager::FindEndString(const char *data, uint32 data_size) {
 }
 
 void SessionManager::OnReconnectMessage(Message* msg) {
-    OnDisconnectMessage(msg);
     ReqConnectData *req_connect_data =
         static_cast<ReqConnectData *>(msg->pdata.get());
+    vzsdk::Session::Ptr session_ptr = FindSession(req_connect_data->session_id());
+    async_thread_->PostDelayed(2000, this, msg->message_id, msg->pdata);
+    if (!((session_ptr && session_ptr->GetState() == Socket::CS_CLOSED)
+        || !session_ptr))
+        return;
+    
     Session::Ptr session(new Session(async_thread_.get(), req_connect_data->session_id()));
-
     bool add_res = AddSession(session);
     ASSERT(add_res);
-    session->Start(req_connect_data->address(), msg->message_id);
+    session->Start(req_connect_data->address(), req_connect_data->session_id());
+}
+
+void SessionManager::OnRemoveSessionMessage(Message *msg)
+{
+    Stanza* stanza = static_cast<ReqConnectData*>(msg->pdata.get());
+    if (stanza)
+    {
+        RemoveSession(stanza->session_id());
+    }
 }
 
 }

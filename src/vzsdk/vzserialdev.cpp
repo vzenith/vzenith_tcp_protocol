@@ -70,14 +70,14 @@ int VzSerialDev::SerialStart(uint32 serial_port) {
 
 int VzSerialDev::SerialSend(uint32 serial_port, const unsigned char *data, unsigned size_data) {
     Json::Value req_json;
-	if (commandanalysis::GeneratSerialSendCmd(serial_port, data, size_data, req_json))
+	if (!commandanalysis::GeneratSerialSendCmd(serial_port, data, size_data, req_json))
 	{
 		return REQ_FAILED;
 	}
 
     // 发送485数据，不需要等返回
     if (!PostReqTask(req_json)) {
-        return REQ_FAILED;
+        return -1;
     }
 
     return REQ_SUCCEED;

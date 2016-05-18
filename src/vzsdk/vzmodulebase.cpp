@@ -26,6 +26,7 @@
 */
 #include "vzsdk/vzmodulebase.h"
 #include "base/logging.h"
+#include "vzsdk/vzconnectdev.h"
 
 VZModuleBase::VZModuleBase(VzsdkService* sdk_service)
     : sdk_service_(sdk_service) {
@@ -35,7 +36,9 @@ VZModuleBase::VZModuleBase(VzsdkService* sdk_service)
 VZModuleBase::~VZModuleBase() {
 }
 
-Message::Ptr vzsdk::VZModuleBase::SyncProcessReqTask(const Json::Value &req_json) {
+Message::Ptr vzsdk::VZModuleBase::SyncProcessReqTask(const Json::Value &req_json
+                                                    , Thread *task_thread) {
+    CritScope crit_scope(&crit_section);
     Message::Ptr msg(NULL);
 
     int session_id = sdk_service_->GetSessionID();
@@ -44,34 +47,60 @@ Message::Ptr vzsdk::VZModuleBase::SyncProcessReqTask(const Json::Value &req_json
         return msg;
     }
 
-    Task::Ptr req_task(new ReqTask(sdk_service_->GetQueueLayer().get(),
-                                   DEFAULT_TIMEOUT,
-                                   session_id,
-                                   req_json));
+    Task::Ptr req_task(new ReqTask(sdk_service_->GetQueueLayer().get()
+                                   , DEFAULT_TIMEOUT
+                                   , session_id
+                                   , req_json
+                                   , task_thread));
 
     msg = req_task->SyncProcessTask();
     return msg;
 }
 
 bool vzsdk::VZModuleBase::PostReqTask(const Json::Value &req_json) {
+    CritScope crit_scope(&crit_section);
     Message::Ptr msg(NULL);
-
     int session_id = sdk_service_->GetSessionID();
     if (session_id == 0) {
         LOG(LS_WARNING) << "The session is is zero, is not a right session";
         return false;
     }
 
+	if (!GetIsConn())
+	{
+		LOG(LS_WARNING) << "The session is is disconnect, is not a right session";
+		return false;
+	}
+
     Task::Ptr req_push_task(new ReqPushTask(sdk_service_->GetQueueLayer().get(),
                                             DEFAULT_TIMEOUT,
                                             session_id,
                                             req_json));
 
-    req_push_task->SyncProcessTask();
+	msg = req_push_task->SyncProcessTask();
+	if (!msg || msg->phandler == NULL)
+	{
+		return false;
+	}
+
     return true;
 }
 
 int vzsdk::VZModuleBase::GetSessionID() {
+    CritScope crit_scope(&crit_section);
     int session_id = sdk_service_->GetSessionID();
     return session_id;
+}
+
+VzsdkService* vzsdk::VZModuleBase::getSDKService()
+{
+    return sdk_service_;
+}
+
+bool vzsdk::VZModuleBase::GetIsConn()
+{
+	Socket::ConnState conn_state = sdk_service_->GetConnectDev()->GetConnState();
+	bool ret = (conn_state == 2) ? true : false;
+
+	return ret;
 }

@@ -51,7 +51,7 @@ VzsdkService::VzsdkService()
 }
 
 VzsdkService::~VzsdkService() {
-
+    Stop();
 }
 
 int VzsdkService::GetSessionID() {
@@ -64,25 +64,8 @@ int VzsdkService::GetSessionID() {
 // 说明:     初始化资源函数
 /************************************************************************/
 bool VzsdkService::Start() {
-
-    // Init logging system
-    LogMessage::LogTimestamps(true);
-    LogMessage::LogContext(vzsdk::LS_INFO);
-    LogMessage::LogThreads(true);
-    queue_layer_.reset(new QueueLayer());
-    ASSERT(push_manager_task_ == NULL);
-    push_thread_.reset(new Thread());
-    push_manager_task_ = new PushManagerTask(queue_layer_.get(),
-            push_thread_.get());
-
-    // For push manager life live
-    Task::Ptr push_task(push_manager_task_);
-    if (queue_layer_->Start()) {
-        push_manager_task_->SyncProcessTask();
-        initModule();
-        return true;
-    }
-    return false;
+    initModule();
+    return true;
 }
 
 /************************************************************************/
@@ -93,19 +76,26 @@ bool VzsdkService::Start() {
 bool VzsdkService::Stop() {
     if (connect_dev_)
       connect_dev_->DisconnectServer();
-    return queue_layer_->Stop();
+    return true;
 }
 
 void VzsdkService::SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData)
 {
   conn_callback_ = func;
-  user_data_ = pUserData;
+  user_data_ = pUserData;  
 }
 
 void VzsdkService::GetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *user_data)
 {
   func = conn_callback_;
   user_data = user_data_;
+}
+
+void VzsdkService::SetParam(QueueLayerPtr queue_layer, PushManagerTask* push_manager_task, ThreadPtr push_thread)
+{
+    queue_layer_ = queue_layer;
+    push_manager_task_ = push_manager_task;
+    push_thread_ = push_thread;
 }
 
 void VzsdkService::initModule() {

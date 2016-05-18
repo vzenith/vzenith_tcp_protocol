@@ -44,10 +44,25 @@ int VzIODev::SetIOOutputAuto(unsigned chn_id, int duration) {
 	commandanalysis::GeneratSetGPIOAutoCmd(chn_id, duration, req_json);
 
     if ( !PostReqTask(req_json)) {
-        return REQ_FAILED;
+        return -1;
     }
 
     return REQ_SUCCEED;
+}
+
+int VzIODev::SetIOOutput(unsigned chn_id, int nOutput)
+{
+	Json::Value req_json;
+	if (!commandanalysis::GeneratSetIOOutputCmd(chn_id, nOutput, req_json))
+	{
+		return -1;
+	}
+
+	if (!PostReqTask(req_json)) {
+		return -1;
+	}
+
+	return REQ_SUCCEED;
 }
 
 int VzIODev::GetGPIOValue(int gpioIn, int *value) {
@@ -105,7 +120,7 @@ int VzIODev::CancelOfflineCheck() {
     commandanalysis::GeneratSetOfflineCheckCmd(2, req_json);
 
     if (!PostReqTask(req_json)) {
-        return REQ_FAILED;
+        return -1;
     }
 
     return REQ_SUCCEED;

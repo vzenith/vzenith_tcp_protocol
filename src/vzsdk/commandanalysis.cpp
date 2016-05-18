@@ -52,25 +52,25 @@ string commandanalysis::GeneratCommonCmd( const char *command ) {
     return cmd;
 }
 
-bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _json_value) {
+bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& json_value) {
     bool ret = false;
 
     if (serial_port == 0 || serial_port == 1) {
-        _json_value["cmd"]		= "ttransmission";
-        _json_value["subcmd"]	= "init";
-        //_json_value["data"]		= "all";
-        //_json_value["datalen"]	= 3;
+        json_value["cmd"]		= "ttransmission";
+        json_value["subcmd"]	= "init";
+        //json_value["data"]		= "all";
+        //json_value["datalen"]	= 3;
 
         int len = 0;
         if (serial_port == 0) {
-        	_json_value["data"] = "rs485-1";
+        	json_value["data"] = "rs485-1";
           len = strlen("rs485-1");
-          _json_value["datalen"] = len;
+          json_value["datalen"] = len;
         }
         else if (serial_port == 1) {          
-        	_json_value["data"] = "rs485-2";
+        	json_value["data"] = "rs485-2";
           len = strlen("rs485-2");
-          _json_value["datalen"] = len;
+          json_value["datalen"] = len;
         }
 
         ret = true;
@@ -79,29 +79,29 @@ bool commandanalysis::GeneratSerialStartCmd(uint32 serial_port, Json::Value& _js
     return ret;
 }
 
-void commandanalysis::GeneratSerialStopCmd(Json::Value& _json_value) {
-	_json_value["cmd"] = "ttransmission";
-	_json_value["subcmd"] = "uninit";
+void commandanalysis::GeneratSerialStopCmd(Json::Value& json_value) {
+	json_value["cmd"] = "ttransmission";
+	json_value["subcmd"] = "uninit";
 }
 
-bool commandanalysis::GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& _json_value) {
+bool commandanalysis::GeneratSerialSendCmd(uint32 serial_port, const unsigned char* data, int datalen, Json::Value& json_value) {
 	bool ret = false;
 
 	if (serial_port == 0 || serial_port == 1) {
-		_json_value["cmd"] = "ttransmission";
-		_json_value["subcmd"] = "send";
+		json_value["cmd"] = "ttransmission";
+		json_value["subcmd"] = "send";
 		if (serial_port == 0) {
-			_json_value["comm"] = "rs485-1";
+			json_value["comm"] = "rs485-1";
 		}
 		else if (serial_port == 1) {
-			_json_value["comm"] = "rs485-2";
+			json_value["comm"] = "rs485-2";
 		}
 
 		string result;
 		vzsdk::Base64::EncodeFromArray(data, datalen, &result);
 
-		_json_value["data"] = result;
-		_json_value["datalen"] = datalen;
+		json_value["data"] = result;
+		json_value["datalen"] = datalen;
 
 		ret = true;
 	}
@@ -109,36 +109,41 @@ bool commandanalysis::GeneratSerialSendCmd(uint32 serial_port, const unsigned ch
 	return ret;
 }
 
-void commandanalysis::GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& _json_value) {
-    _json_value["cmd"]		= "offline";
-    _json_value["interval"] = interval;
+void commandanalysis::GeneratSetOfflineCheckCmd(unsigned int interval, Json::Value& json_value) {
+    json_value["cmd"]		= "offline";
+    json_value["interval"] = interval;
 }
 
-void commandanalysis::GeneratCancelOfflineCheckCmd(Json::Value& _json_value) {
-    _json_value["cmd"]		= "offline";
-    _json_value["subcmd"]	= "cancel";
+void commandanalysis::GeneratCancelOfflineCheckCmd(Json::Value& json_value) {
+    json_value["cmd"]		= "offline";
+    json_value["subcmd"]	= "cancel";
 }
 
-void commandanalysis::GeneratGetImageByIdCmd(int id, Json::Value& _json_value) {
-    _json_value["cmd"]  = "get_image";
-    _json_value["id"]   = id;
+void commandanalysis::GeneratGetImageByIdCmd(int id, Json::Value& json_value) {
+    json_value["cmd"]  = "get_image";
+    json_value["id"]   = id;
 }
 
-void commandanalysis::GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value& _json_value) {
-    _json_value["cmd"]		= "get_record";
-    _json_value["id"]		= id;
-    _json_value["format"]	= "json";
-    _json_value["image"]	= needImg ? true : false;
+void commandanalysis::GeneratGetRecordByIdCmd(int id, bool needImg, Json::Value& json_value) {
+    json_value["cmd"]		= "get_record";
+    json_value["id"]		= id;
+    json_value["format"]	= "json";
+    json_value["image"]	= needImg ? true : false;
 }
 
-void commandanalysis::GeneratOfflineCheckCmd(unsigned int interval, Json::Value& _json_value) {
-	_json_value["cmd"] = "offline";
-	_json_value["interval"] = interval;
+void commandanalysis::GeneratOfflineCheckCmd(unsigned int interval, Json::Value& json_value) {
+	json_value["cmd"] = "offline";
+	json_value["interval"] = interval;
 
 }
 
-void commandanalysis::GeneratGetDeviceSN(int _session_id, Json::Value& _json_value) {
-    _json_value[JSON_REQ_CMD] = JSON_REQ_CMD_GETSN;
+void commandanalysis::GeneraGetMaxRecordID(Json::Value& json_value)
+{
+    json_value[JSON_REQ_CMD] = JSON_REQ_CMD_GETMAXRECORDID;
+}
+
+void commandanalysis::GeneratGetDeviceSN(int _session_id, Json::Value& json_value) {
+    json_value[JSON_REQ_CMD] = JSON_REQ_CMD_GETSN;
 }
 
 std::string commandanalysis::IvsFormatToString(int ivs_format) {
@@ -166,26 +171,26 @@ void commandanalysis::GeneratIVSResult(bool _enable_result, int _format, bool _e
     req_json[JSON_REQ_IVSRESULT_IMAGE_TYPE]   = _img_type;
 }
 
-void commandanalysis::GeneratForceTrigger(Json::Value& _json_value) {
-    _json_value[JSON_REQ_CMD] = JSON_REQ_CMD_FORCETRIGGER;
+void commandanalysis::GeneratForceTrigger(Json::Value& json_value) {
+    json_value[JSON_REQ_CMD] = JSON_REQ_CMD_FORCETRIGGER;
 }
 
-void commandanalysis::GeneratGetGPIOValueCmd(int gpio, Json::Value& _json_value) {
-	_json_value["cmd"] = "get_gpio_value";
-	_json_value["gpio"] = gpio;
-
-}
-
-void commandanalysis::GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& _json_value) {
-
-	_json_value["cmd"] = "ioctl";
-	_json_value["io"] = gpio;
-	_json_value["value"] = 2;		//VALUE 0:关，1开，2先通后断
-	_json_value["delay"] = duration;
+void commandanalysis::GeneratGetGPIOValueCmd(int gpio, Json::Value& json_value) {
+	json_value["cmd"] = "get_gpio_value";
+	json_value["gpio"] = gpio;
 
 }
 
-void commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& _json_value) {
+void commandanalysis::GeneratSetGPIOAutoCmd(int gpio, int duration, Json::Value& json_value) {
+
+	json_value["cmd"] = "ioctl";
+	json_value["io"] = gpio;
+	json_value["value"] = 2;		//VALUE 0:关，1开，2先通后断
+	json_value["delay"] = duration;
+
+}
+
+void commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *item, Json::Value& json_value) {
     // 起效的时间
     char enable_time[64] = {0};
     sprintf(enable_time, "%d-%02d-%02d %02d:%02d:%02d", item->struTMEnable.nYear, item->struTMEnable.nMonth, item->struTMEnable.nMDay,
@@ -198,8 +203,8 @@ void commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *i
 
     Json::Value record;
 
-	_json_value["cmd"] = "white_list_operator";
-	_json_value["operator_type"] = "update_or_add";
+	json_value["cmd"] = "white_list_operator";
+	json_value["operator_type"] = "update_or_add";
 
     record["index"]				= item->uVehicleID;
     record["plate"]				= item->strPlateID;
@@ -212,22 +217,22 @@ void commandanalysis::GeneratImportWlistVehicleCmd(const VZ_LPR_WLIST_VEHICLE *i
     record["vehicle_code"]		= item->strCode;
     record["vehicle_comment"]	= item->strComment;
 
-	_json_value["dldb_rec"] = record;
+	json_value["dldb_rec"] = record;
 }
 
-void commandanalysis::GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& _json_value) {
+void commandanalysis::GeneratDeleteWlistVehicleCmd(const char* plate_code, Json::Value& json_value) {
 
-	_json_value["cmd"] = "white_list_operator";
-	_json_value["operator_type"] = "delete";
-	_json_value["plate"] = plate_code;
+	json_value["cmd"] = "white_list_operator";
+	json_value["operator_type"] = "delete";
+	json_value["plate"] = plate_code;
 }
 
-void commandanalysis::GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& _json_value) {
+void commandanalysis::GeneratQueryWlistVehicleCmd(const char* plate_code, Json::Value& json_value) {
 
-	_json_value["cmd"] = "white_list_operator";
-	_json_value["operator_type"] = "select";
-	_json_value["sub_type"] = "plate";
-	_json_value["plate"] = plate_code;
+	json_value["cmd"] = "white_list_operator";
+	json_value["operator_type"] = "select";
+	json_value["sub_type"] = "plate";
+	json_value["plate"] = plate_code;
 }
 
 void commandanalysis::ParseTTransmissionResponse(Json::Value &root, TTRANSMISSION_RESPONSE *value ) {
@@ -298,13 +303,9 @@ void commandanalysis::ParseGPIOResponse(Json::Value &root, GPIO_RESPONSE *value 
     }
 }
 
-void commandanalysis::ParseMaxRecResponse(Json::Value &root, MAX_REC_RESPONSE *value ) {
-    if ( value == NULL ) {
-        return;
-    }
-
-    if ( !root["max_id"].isNull() ) {
-        value->max_id = root["max_id"].asUInt( );
+void commandanalysis::ParseMaxRecResponse(Json::Value &root, MAX_REC_RESPONSE& value ) {
+     if ( !root["max_id"].isNull() ) {
+        value.max_id = root["max_id"].asUInt( );
     }
 }
 
@@ -484,4 +485,15 @@ void commandanalysis::ParsePlateResultResponse(Json::Value &root, TH_PlateResult
     if (root["clipImgSize"].isInt()) {
         clipImgSize = root["clipImgSize"].asInt();
     }
+}
+
+bool commandanalysis::GeneratSetIOOutputCmd(int gpio, int nOutput, Json::Value& _json_value){
+    bool ret = false;
+    if (nOutput == 0 || nOutput == 1){
+        _json_value["cmd"] = "ioctl";
+        _json_value["io"] = gpio;
+        _json_value["value"] = nOutput;		//VALUE 0:关，1开
+        ret = true;
+    }
+    return ret;
 }

@@ -41,6 +41,11 @@ PushManagerTask::~PushManagerTask() {
 }
 
 Message::Ptr PushManagerTask::SyncProcessTask() {
+	if (task_thread_ == NULL)
+	{
+		return Message::Ptr(NULL);
+	}
+
     if(!is_register_) {
         PostTask();
         is_register_ = true;
@@ -53,16 +58,33 @@ Message::Ptr PushManagerTask::SyncProcessTask() {
 bool PushManagerTask::HandleMessage(Message *msg) {
     Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
     if(msg->message_id == 0
-            && stanza->stanza_type() == RES_STANZA_EVENT) {
+            && stanza->stanza_type() == RES_STANZA_EVENT){
         return HandleResponse(msg);
     } else if ((stanza->stanza_type() == RES_DISCONNECTED_EVENT_FAILURE
                 || stanza->stanza_type() == RES_CONNECTED_EVENT)) {
         HandleChangeConn(msg);
     }
+    else if (stanza->stanza_type() == RES_RESUME_TASK_EVENT)
+    {
+		if (task_thread_ == NULL)
+		{
+			return false;
+		}
+
+        task_thread_->Post(this, task_id_, msg->pdata);  
+        //task_thread_->PostDelayed(5000, this, stanza->session_id(), msg->pdata);
+        return true;
+    }
+
     return false;
 }
 
 bool PushManagerTask::HandleResponse(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     CritScope cs(&crit_);
     ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
     const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
@@ -75,6 +97,11 @@ bool PushManagerTask::HandleResponse(Message *msg) {
 }
 
 bool PushManagerTask::HandleChangeConn(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     PushHandleKeys::iterator iter = push_handle_keys_.find("change_conn_status");
     if (iter != push_handle_keys_.end()) {
         task_thread_->Post(this, task_id_, msg->pdata);
@@ -90,6 +117,11 @@ void PushManagerTask::OnMessage(Message *msg) {
 void PushManagerTask::ProcessPushEvent(Message *msg) {
     CritScope cs(&crit_);
     ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
+	if (response == NULL)
+	{
+		return;
+	}
+
     for(std::size_t i = 0; i < push_handles_.size(); i++) {
         if(push_handles_[i]->HandleMessageData(response)) {
             break;

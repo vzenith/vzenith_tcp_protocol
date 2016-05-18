@@ -208,6 +208,17 @@ VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SerialStop(VzLPRTcpHandle handle);
 */
 VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SetIOOutputAuto(VzLPRTcpHandle handle, unsigned uChnId, int nDuration);
 
+
+/**
+*  @brief 设置IO输出的状态
+*  @param  [IN] handle 由VzLPRClient_Open函数获得的句柄
+*  @param  [IN] uChnId IO输出的通道号，从0开始
+*  @param  [OUT] nOutput 将要设置的IO输出的状态，0表示继电器开路，1表示继电器闭路
+*  @return 0表示成功，-1表示失败
+*  @ingroup group_device
+*/
+VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SetIOOutput(VzLPRTcpHandle handle, unsigned uChnId, int nOutput);
+
 /**
 *  @brief 通过该回调函数获得设备的一般状态信息
 *  @param  [IN] handle		由VzLPRTcp_Open函数获得的句柄
@@ -216,8 +227,10 @@ VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SetIOOutputAuto(VzLPRTcpHandle handle, un
 *  @param  [IN] pStrDetail	详细描述字符串
 *  @ingroup group_callback
 */
-typedef void (__STDCALL *VZLPRC_TCP_COMMON_NOTIFY_CALLBACK)(VzLPRTcpHandle handle, void *pUserData,
-														VZ_LPRC_COMMON_NOTIFY eNotify, const char *pStrDetail);
+typedef void (__STDCALL *VZLPRC_TCP_COMMON_NOTIFY_CALLBACK)(VzLPRTcpHandle handle
+                                                            , void *pUserData
+                                                            , VZ_LPRC_COMMON_NOTIFY eNotify
+                                                            , const char *pStrDetail);
 
 /**
 *  @brief 设置设备连接反馈结果相关的回调函数
@@ -227,7 +240,6 @@ typedef void (__STDCALL *VZLPRC_TCP_COMMON_NOTIFY_CALLBACK)(VzLPRTcpHandle handl
 *  @ingroup group_global
 */
 VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData);
-
 
 /**
 *  @brief 根据ID获取车牌图片
@@ -306,17 +318,6 @@ VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_LoadRecordById(VzLPRTcpHandle handle, int
 *  @ingroup group_device
 */
 VZ_LPRC_TCP_API const char* __STDCALL VzLPRTcp_GetIP(VzLPRTcpHandle handle);
-
-/**
-*  @brief 设置脱机结果的回调函数
-*  @param  [IN] handle 由VzLPRTcp_Open函数获得的句柄
-*  @param  [IN] func 识别结果回调函数，如果为NULL，则表示关闭该回调函数的功能
-*  @param  [IN] pUserData 回调函数中的上下文
-*  @param  [IN] bEnableImage 指定识别结果的回调是否需要包含截图信息：1为需要，0为不需要
-*  @return 0表示成功，-1表示失败
-*  @ingroup group_device
-*/
-VZ_LPRC_TCP_API int __STDCALL VzLPRTcp_SetOfflinePlateInfoCallBack(VzLPRTcpHandle handle, VZLPRC_TCP_PLATE_INFO_CALLBACK func, void *pUserData, int bEnableImage);
 
 /**
 *  @brief 导入一条白名单记录

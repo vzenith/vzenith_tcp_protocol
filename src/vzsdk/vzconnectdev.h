@@ -34,10 +34,14 @@
 namespace vzsdk {
 class  VzsdkService;
 
-class VzConnectDev : public VZModuleBase {
+class VzConnectDev : public VZModuleBase
+                   , public sigslot::has_slots<>{
   public:
     VzConnectDev(VzsdkService* _service);
     ~VzConnectDev();
+
+    sigslot::signal1<int> SignalDeviceChangeConnStatus; //连接状态改变
+    sigslot::signal0<> SignalDeviceDisconnecing;        //正在断开连接
 
     int ConnectServer(const std::string& _ip_addr, uint16 _port);
     int DisconnectServer();
@@ -52,6 +56,8 @@ class VzConnectDev : public VZModuleBase {
   protected:
     int ReConnectServer();
     void ChangeConn();
+
+    void SlotChangeConnStatus(int);
 
   private:
     Task::Ptr connect_task_;

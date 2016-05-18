@@ -72,11 +72,13 @@ class QueueLayer : public noncopyable
   void OnAddPushTaskMessage(Message *msg);
   void OntranslateToSyncLayer(Message *msg);
   void ReConnect(Message* msg);
+  void RemoveSession(Message* msg);
 
   bool AddTask(Task::Ptr task);
   bool RemoveTask(uint32 task_id);
   Task::Ptr FindTask(uint32 task_id);
  private:
+  CriticalSection crit_section_;
   boost::shared_ptr<Thread> queue_thread_;
   boost::shared_ptr<SessionManager> session_manager_;
   std::map<uint32, Task::Ptr> tasks_;

@@ -29,6 +29,10 @@
 #include "vzsdk/queuelayer.h"
 #include "base/logging.h"
 #include "vzsdk/vzsdkbase.h"
+#include "vzsdk/vzclientsdk_lpdefine.h"
+#include "vzsdk/commfunc.h"
+#include "vzsdk/vzrecognition.h"
+#include "base/criticalsection.h"
 
 #ifndef __has_feature
 #define __has_feature(x) 0  // Compatibility with non-clang or LLVM compilers.
@@ -37,21 +41,33 @@
 namespace vzsdk {
 
 // The task id start by 0X01
-uint32 Task::unequal_task_id_ = 0X01;
+int Task::unequal_task_id_ = 0X01;
 
 Task::Task(QueueLayer *queue_layer, uint32 timeout, Thread *task_thread)
     :queue_layer_(queue_layer),
      timeout_(timeout),
-     task_thread_(task_thread) {
+     task_thread_(task_thread),
+     unwrap_thread_(false){
     if(task_thread_ == NULL) {
         task_thread_ = Thread::Current();
+        if (task_thread_ == NULL)
+        {
+            task_thread_ = ThreadManager::Instance()->WrapCurrentThread();
+            unwrap_thread_ = true;
+        }
     }
-    task_id_ = unequal_task_id_++;
+	
+	task_id_ = (uint32)(AtomicOps::Increment(&unequal_task_id_));
     // LOG(LS_INFO) << "Create task " << task_id_;
 }
 
 Task::~Task() {
     // LOG(LS_INFO) << "Destory task " << task_id_;
+    if (unwrap_thread_)
+    {
+        //ThreadManager::Instance()->UnwrapCurrentThread();
+        //task_thread_->UnwrapCurrent();
+    }
 }
 
 void Task::OnMessage(Message *msg) {
@@ -66,6 +82,11 @@ Message::Ptr Task::SyncProcessTask() {
 }
 
 bool Task::HandleMessage(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     if(msg->message_id == task_id_) {
         task_thread_->Post(this, task_id_, msg->pdata);
         return true;
@@ -79,6 +100,11 @@ void Task::PostTask() {
 }
 
 Message::Ptr Task::WaitTaskDone() {
+	if (task_thread_ == NULL)
+	{
+		return Message::Ptr(NULL);
+	}
+
     uint32 msEnd = TimeAfter(timeout_);
     int cmsNext = timeout_;
     Message::Ptr msg(new Message());
@@ -141,6 +167,11 @@ DisconnectTask::DisconnectTask(QueueLayer *queue_layer,
 }
 
 bool DisconnectTask::HandleMessage(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
     if(msg->message_id == task_id_
             && (stanza->stanza_type() == RES_DISCONNECTED_EVENT_SUCCEED
@@ -156,12 +187,13 @@ DisconnectTask::~DisconnectTask() {
 }
 
 //------------------------------------------------------------------------------
-ReqTask::ReqTask(QueueLayer *queue_layer,
-                 uint32 timeout,
-                 uint32 session_id,
-                 const Json::Value &req_json)
-    : Task(queue_layer, timeout),
-      req_data_(new RequestData(session_id, req_json)) {
+ReqTask::ReqTask(QueueLayer *queue_layer
+                 , uint32 timeout
+                 , uint32 session_id
+                 , const Json::Value &req_json
+                 , Thread *task_thread)
+                    : Task(queue_layer, timeout, task_thread)
+                    , req_data_(new RequestData(session_id, req_json)) {
     set_message_data(req_data_);
     req_cmd_ = req_json[JSON_REQ_CMD].asString();
     ASSERT(!req_cmd_.empty());
@@ -170,6 +202,11 @@ ReqTask::~ReqTask() {
 }
 
 bool ReqTask::HandleMessage(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
     if(msg->message_id == 0
             && stanza->session_id() == req_data_->session_id()
@@ -185,6 +222,11 @@ bool ReqTask::HandleMessage(Message *msg) {
 }
 
 bool ReqTask::HandleResponse(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
     const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();
     if(res_cmd == req_cmd_) {
@@ -207,7 +249,16 @@ ReqPushTask::ReqPushTask(QueueLayer *queue_layer,
 ReqPushTask::~ReqPushTask() {
 }
 
+void ReqPushTask::OnMessage(Message *msg){
+
+}
+
 bool ReqPushTask::HandleMessage(Message *msg) {
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     Stanza *stanza = static_cast<Stanza *>(msg->pdata.get());
     if(msg->message_id == task_id_
             && stanza->session_id() == req_data_->session_id()) {
@@ -245,6 +296,12 @@ ReqRecordTask::~ReqRecordTask() {
 }
 
 bool ReqRecordTask::HandleResponse(Message *msg) {
+
+	if (task_thread_ == NULL)
+	{
+		return false;
+	}
+
     //»ñÈ¡¼ÇÂ¼
     ResponseData *response = static_cast<ResponseData *>(msg->pdata.get());
     const std::string res_cmd = response->res_json()[JSON_REQ_CMD].asString();

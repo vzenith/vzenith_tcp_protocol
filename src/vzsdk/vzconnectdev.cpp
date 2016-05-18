@@ -29,6 +29,7 @@
 #include "base/logging.h"
 #include "vzsdk/vzsdkpushhandle.h"
 
+
 vzsdk::VzConnectDev::VzConnectDev(VzsdkService* _service)
     : VZModuleBase(_service) {
 }
@@ -48,25 +49,28 @@ int vzsdk::VzConnectDev::ConnectServer(const std::string& _ip_addr, uint16 _port
     int _session_id = SESSION_ID_INVALUE;
     SocketAddress remote_address(_ip_addr, _port);
     Task::Ptr connect_task(new ConnectTask(sdk_service_->GetQueueLayer().get(),
-                                           FOREVER_TIMEOUT,
+										   DEFAULT_TIMEOUT,
                                            remote_address));
     Message::Ptr msg = connect_task->SyncProcessTask();
+    ReqConnectData* _req_connect_data = static_cast<ReqConnectData*>(connect_task->message_data().get());
+    req_connect_data_ptr_ = ReqConnectDataPtr(new ReqConnectData(*_req_connect_data));
 
-    if (!msg || msg->phandler == NULL) {
+    if (!msg || msg->phandler == NULL) {        
         return DEFAULT_RESULT_TIMEOUT;
     }
+  
 
-    ReqConnectData* _req_connect_data = static_cast<ReqConnectData*>(connect_task->message_data().get());
     Stanza* _stanze = static_cast<Stanza*>(msg->pdata.get());
     if (_stanze) {
         int _new_session_id = _stanze->session_id();
-        req_connect_data_ptr_ = ReqConnectDataPtr(new ReqConnectData(*_req_connect_data));
         req_connect_data_ptr_->set_session_id(_new_session_id);
         if (GetConnState() == Socket::CS_CONNECTED) {
             _session_id = _new_session_id;
             ReConnectServer();
             ChangeConn();
         }
+        else 
+            req_connect_data_ptr_->set_session_id(SESSION_ID_INVALUE);
     }
 
     return _session_id;
@@ -80,10 +84,11 @@ int vzsdk::VzConnectDev::ConnectServer(const std::string& _ip_addr, uint16 _port
 /************************************************************************/
 int vzsdk::VzConnectDev::DisconnectServer() {
     int _session_id = req_connect_data_ptr_->session_id();
-    if (_session_id == 0) {
+    if (_session_id == SESSION_ID_INVALUE) {
         LOG(LS_WARNING) << "The session is is zero, is not a right session";
         return SESSION_ID_INVALUE;
     }
+    SignalDeviceDisconnecing.emit();
     Task::Ptr disconnect_task(new DisconnectTask(sdk_service_->GetQueueLayer().get(),
                               DEFAULT_TIMEOUT,
                               _session_id));
@@ -112,6 +117,11 @@ std::string vzsdk::VzConnectDev::GetIP() {
     return req_connect_data_ptr_->address().ipaddr().ToString();
 }
 
+/************************************************************************/
+// 函数:     GetSessionID
+// 返回值:   int
+// 说明:     获取session id
+/************************************************************************/
 int vzsdk::VzConnectDev::GetSessionID() {
     int session_id = SESSION_ID_INVALUE;
     if (req_connect_data_ptr_)
@@ -119,6 +129,11 @@ int vzsdk::VzConnectDev::GetSessionID() {
     return session_id;
 }
 
+/************************************************************************/
+// 函数:     GetConnState
+// 返回值:   vzsdk::Socket::ConnState
+// 说明:     当前连接状态
+/************************************************************************/
 vzsdk::Socket::ConnState vzsdk::VzConnectDev::GetConnState() {
     int _session_id = GetSessionID();
     SessionManager::Ptr session_mana_ = sdk_service_->GetQueueLayer()->GetSessionManamger();
@@ -129,6 +144,13 @@ vzsdk::Socket::ConnState vzsdk::VzConnectDev::GetConnState() {
     return Socket::CS_CLOSED;
 }
 
+/************************************************************************/
+// 函数:     SetCommonNotifyCallBack
+// 参数:     VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func
+// 参数:     void * pUserData
+// 返回值:   void
+// 说明:     设置断网续传回调函数
+/************************************************************************/
 void vzsdk::VzConnectDev::SetCommonNotifyCallBack(VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func, void *pUserData) {
     static_cast<ChangeConnPushHandle*>(change_conn_pushhandle.get())->SetConnCallBack(func, pUserData);
 }
@@ -142,18 +164,37 @@ int vzsdk::VzConnectDev::ReConnectServer() {
     if (!req_connect_data_ptr_)
         return SESSION_ID_INVALUE;
 
-    req_connect_data_ptr_->set_stanza_type(RES_RECONNECT_SERVER);
-    sdk_service_->GetQueueLayer()->Post(RES_RECONNECT_SERVER, req_connect_data_ptr_);
+    req_connect_data_ptr_->set_stanza_type(RES_RECONNECT_EVENT);
+    sdk_service_->GetQueueLayer()->Post(RES_RECONNECT_EVENT, req_connect_data_ptr_);
+
     return REQ_SUCCEED;
 }
 
+/************************************************************************/
+// 函数:     ChangeConn
+// 返回值:   void
+// 说明:     设置连接状态改变
+/************************************************************************/
 void vzsdk::VzConnectDev::ChangeConn() {
-    change_conn_pushhandle = ChangeConnPushHandle::Ptr(new ChangeConnPushHandle("change_conn_status"));
+    change_conn_pushhandle = ChangeConnPushHandle::Ptr(new ChangeConnPushHandle("change_conn_status"));    
     ChangeConnPushHandle* conn_handle = static_cast<ChangeConnPushHandle*>(change_conn_pushhandle.get());
+    conn_handle->SignalChangeConnStatus.connect(this, &VzConnectDev::SlotChangeConnStatus);
     conn_handle->SetSessionID(sdk_service_->GetSessionID());
+
     VZLPRC_TCP_COMMON_NOTIFY_CALLBACK func = NULL;
     void *user_data = NULL;
     sdk_service_->GetCommonNotifyCallBack(func, user_data);
     conn_handle->SetConnCallBack(func, user_data);
     sdk_service_->AddPushHandle(change_conn_pushhandle);
+}
+
+/************************************************************************/
+// 函数:     SlotChangeConnStatus
+// 参数:     int statue
+// 返回值:   void
+// 说明:     发送连接状态信号
+/************************************************************************/
+void vzsdk::VzConnectDev::SlotChangeConnStatus(int statue)
+{
+    SignalDeviceChangeConnStatus.emit(statue);
 }
