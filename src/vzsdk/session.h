@@ -89,7 +89,9 @@ class Session : public noncopyable,
   void InitSocket();
   void UinitSocket();
   void ProcessInput();
-  int ProcessPacketProtocol(const char *data, std::size_t data_size);
+  int ProcessPacketProtocol(const char *data, 
+	  std::size_t data_size,
+	  std::size_t *read_size);
   void OnHandleInputPacket(const char *data,
                            uint32 data_size,
                            uint8 packet_type);

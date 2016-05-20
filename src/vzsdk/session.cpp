@@ -133,17 +133,22 @@ void Session::ProcessInput() {
             break;
         }
         const char *data = read_buffer_.Data();
-        int process_size = ProcessPacketProtocol(data, data_size);
+		std::size_t read_size = 0;
+		int process_size = ProcessPacketProtocol(data, data_size, &read_size);
+		if (read_size) {
+			read_buffer_.Consume(read_size);
+		}
         if(process_size == PARSE_PACKET_NEED_MORE_DATA) {
             break;
-        } else {
-            read_buffer_.Consume(process_size);
         }
     }
 }
 
-int Session::ProcessPacketProtocol(const char *data, std::size_t data_size) {
+int Session::ProcessPacketProtocol(const char *data, 
+	std::size_t data_size,
+	std::size_t *read_size) {
     ASSERT(data_size != 0);
+	*read_size = 0;
     std::size_t offset = 0;
     uint8 packet_type = 0;
     uint8 packet_number = 0;
@@ -172,6 +177,7 @@ int Session::ProcessPacketProtocol(const char *data, std::size_t data_size) {
         if(data_size - offset >= packet_size) {
             OnHandleInputPacket(data + offset, packet_size, packet_type);
             offset += packet_size;
+			*read_size = offset;
         } else {
             return PARSE_PACKET_NEED_MORE_DATA;
         }
