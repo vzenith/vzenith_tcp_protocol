@@ -14,7 +14,6 @@ option(ENABLE_UNIT_TEST "Set to ON to USE GTest unit testing." ON)
 option(COVERALLS "Generate coveralls data" OFF)
 ##########################################################
 ## Step 1 
-SET(JSON_CPP ${PROJECT_SOURCE_DIR}/third_part/jsoncpp)
 SET(LIBEVENT ${PROJECT_SOURCE_DIR}/third_part/libevent)
 SET(GTEST ${PROJECT_SOURCE_DIR}/third_part/gtest)
 
@@ -29,8 +28,8 @@ endif()
 ##1. INCLUDE_DIRECTORES
 MESSAGE(STATUS "Step 1 :  Add include directores")
 SET(TCP_SDK_INCLUDE_DIR
-	${JSON_CPP}/include
 	${PROJECT_SOURCE_DIR}/src
+	${PROJECT_SOURCE_DIR}/third_part
 	${LIBEVENT}/include
 	${PROJECT_BINARY_DIR}/third_part/libevent/include
 	${GTEST}/googletest/include
@@ -44,7 +43,6 @@ IF(WIN32)
 		${PROJECT_SOURCE_DIR}/lib/win
 		)
 	SET(TCP_SDK_LINK_LIB
-		jsoncpp.lib
 		winmm.lib
 		libvztcpsdk.lib
 		)
@@ -54,8 +52,7 @@ ELSE()
 		${PROJECT_SOURCE_DIR}/lib/unix
 		)
 	SET(TCP_SDK_LINK_LIB
-		libjsoncpp.a
-		libvztcpsdk.a
+		libvztcpsdk_dynamic.so
 		-lpthread
 		-lrt
 		)
@@ -115,20 +112,20 @@ if(WIN32)
 else()
 	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/bin/unix")
 	SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/lib/unix")
-	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/lib/unix")
+	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY  "${PROJECT_SOURCE_DIR}/bin/unix")
 
 	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG  "${PROJECT_SOURCE_DIR}/bin/unix")
 	SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG  "${PROJECT_SOURCE_DIR}/lib/unix")
-	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG  "${PROJECT_SOURCE_DIR}/lib/unix")
+	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG  "${PROJECT_SOURCE_DIR}/bin/unix")
 	 
 	# With Release properties
 	SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE  "${PROJECT_SOURCE_DIR}/bin/unix")
 	SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE  "${PROJECT_SOURCE_DIR}/lib/unix")
-	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  "${PROJECT_SOURCE_DIR}/lib/unix")
+	SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE  "${PROJECT_SOURCE_DIR}/bin/unix")
 ENDIF()
 ##########################################################
 ## Setp 3
-ADD_SUBDIRECTORY(third_part/jsoncpp)
+# ADD_SUBDIRECTORY(third_part/jsoncpp)
 IF(ENABLE_UNIT_TEST)
 	ADD_SUBDIRECTORY(third_part/gtest)
 ENDIF()
@@ -136,13 +133,14 @@ ENDIF()
 ADD_SUBDIRECTORY(src)
 
 # TEST
-#  ADD_SUBDIRECTORY(test/libevent_test)
+# ADD_SUBDIRECTORY(test/libevent_test)
 ADD_SUBDIRECTORY(test/thead_test)
 ADD_SUBDIRECTORY(test/session_test)
 ADD_SUBDIRECTORY(test/sdk_test)
 ADD_SUBDIRECTORY(test/connected_test)
+ADD_SUBDIRECTORY(test/boost_test)
 
 IF(ENABLE_UNIT_TEST)
-	enable_testing()
-	ADD_SUBDIRECTORY(test/unit_test)
+	#enable_testing()
+	#ADD_SUBDIRECTORY(test/unit_test)
 ENDIF()
